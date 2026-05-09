@@ -5,24 +5,54 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Playing - Flixora</title>
     <style>
-        body, html { margin: 0; padding: 0; height: 100%; background: #000; overflow: hidden; }
+        body, html { margin: 0; padding: 0; height: 100%; background: #000; overflow: hidden; display: flex; align-items: center; justify-content: center; }
         iframe { width: 100%; height: 100%; border: none; }
-        .back-btn { position: absolute; top: 20px; left: 20px; color: white; background: rgba(0,0,0,0.5); padding: 10px; border-radius: 50%; text-decoration: none; z-index: 10; }
+        .back-btn { position: absolute; top: 20px; left: 20px; color: white; background: rgba(255,255,255,0.2); padding: 10px; border-radius: 50%; text-decoration: none; z-index: 100; font-weight: bold; }
+        #error-msg { color: #555; font-family: sans-serif; text-align: center; display: none; }
     </style>
 </head>
 <body>
+
     <a href="index.html" class="back-btn">⬅</a>
-    <iframe id="video-iframe" src="" allow="autoplay; fullscreen"></iframe>
+    
+    <iframe id="video-iframe" src="" allow="autoplay; fullscreen" onerror="handleError()"></iframe>
+
+    <div id="error-msg">
+        <p>ভিডিওটি এই মুহূর্তে পাওয়া যাচ্ছে না। অন্য একটি সোর্স ট্রাই করা হচ্ছে...</p>
+    </div>
 
     <script>
         const params = new URLSearchParams(window.location.search);
         const id = params.get('id');
-        const type = params.get('type') || 'movie';
+        const type = params.get('type') || 'tv';
         
-        // Vidsrc বা সমজাতীয় সোর্স যা অটো-প্লে সাপোর্ট করে
-        // এখানে সরাসরি এমবেড লিঙ্ক দেওয়া হলো
-        const playerUrl = `https://vidsrc.to/embed/${type}/${id}?autoplay=1`;
-        document.getElementById('video-iframe').src = playerUrl;
+        // সোর্স লিস্ট (প্রথমটা কাজ না করলে পরেরটা ট্রাই করবে)
+        const sources = [
+            `https://vidsrc.to/embed/${type}/${id}`,
+            `https://vidsrc.me/embed/${type}/${id}`,
+            `https://embed.smashystream.com/playere.php?tmdb=${id}`
+        ];
+
+        let currentSource = 0;
+        const iframe = document.getElementById('video-iframe');
+
+        function loadVideo() {
+            if (currentSource < sources.length) {
+                iframe.src = sources[currentSource];
+                currentSource++;
+            } else {
+                document.getElementById('error-msg').style.display = 'block';
+                iframe.style.display = 'none';
+            }
+        }
+
+        // শুরুতে প্রথম সোর্স লোড করা
+        loadVideo();
+
+        // যদি আইফ্রেম লোড হতে সমস্যা হয় (কিছু ক্ষেত্রে এটি কাজ করে)
+        function handleError() {
+            loadVideo();
+        }
     </script>
 </body>
 </html>
