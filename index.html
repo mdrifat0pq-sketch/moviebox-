@@ -1,59 +1,165 @@
 <!DOCTYPE html>
-<html lang="bn">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Flixora Premium</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Flixora | Home</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
-        :root { --main-red: #e50914; --bg-black: #05080f; }
-        body { background: var(--bg-black); color: white; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; }
-        .navbar { display: flex; justify-content: space-between; align-items: center; padding: 15px 5%; background: rgba(0,0,0,0.8); position: fixed; width: 90%; z-index: 1000; }
-        .logo { font-size: 26px; font-weight: bold; color: var(--main-red); }
-        .movie-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 15px; padding: 100px 5% 20px; }
-        .card { position: relative; border-radius: 8px; overflow: hidden; transition: 0.3s; cursor: pointer; }
-        .card:hover { transform: scale(1.05); }
-        .card img { width: 100%; height: 210px; object-fit: cover; }
-        .card-info { padding: 8px; font-size: 13px; text-align: center; background: #161b22; }
-        .cats { display: flex; overflow-x: auto; gap: 10px; padding: 70px 5% 0; scrollbar-width: none; }
-        .cat-btn { background: #21262d; border: none; color: white; padding: 8px 16px; border-radius: 20px; white-space: nowrap; cursor: pointer; }
-        .cat-btn.active { background: var(--main-red); }
+        body { background-color: #000; color: white; font-family: 'Helvetica Neue', Arial, sans-serif; margin: 0; overflow-x: hidden; }
+        
+        /* Netflix Horizontal Row Style */
+        .movie-row { display: flex; overflow-x: auto; gap: 12px; padding: 10px 20px; scrollbar-width: none; }
+        .movie-row::-webkit-scrollbar { display: none; }
+        
+        .movie-card { min-width: 110px; width: 110px; cursor: pointer; transition: 0.3s; }
+        .poster-wrapper { aspect-ratio: 2/3; border-radius: 4px; overflow: hidden; background: #1a1a1a; margin-bottom: 6px; }
+        .poster-wrapper img { width: 100%; height: 100%; object-fit: cover; }
+        .movie-title { font-size: 10px; font-weight: 600; text-align: center; color: #e5e5e5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; height: 30px; }
+
+        /* Clear Banner */
+        #heroSection { width: 100%; padding-bottom: 20px; }
+        .hero-img { width: 100%; height: auto; display: block; }
+
+        /* Category Filter */
+        .cat-scroll { display: flex; overflow-x: auto; gap: 8px; padding: 15px 20px; scrollbar-width: none; }
+        .cat-tab { white-space: nowrap; padding: 6px 14px; border-radius: 20px; background: #222; font-size: 11px; font-weight: bold; cursor: pointer; }
+        .cat-tab.active { background: #E50914; }
+
+        /* Details Modal */
+        #detailsModal { position: fixed; inset: 0; z-index: 9000; background: #000; overflow-y: auto; display: none; }
+        .ep-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(70px, 1fr)); gap: 10px; margin-top: 20px; }
+        .ep-btn { background: #1f1f1f; padding: 12px; border-radius: 6px; text-align: center; font-size: 12px; border: 1px solid #333; }
+
+        /* Player Branding */
+        .player-watermark { position: absolute; top: 12%; right: 5%; text-align: center; z-index: 10002; pointer-events: none; }
+        .watermark-logo { width: 35px; }
+        .watermark-text { font-size: 11px; font-weight: 900; color: #E50914; }
     </style>
 </head>
 <body>
 
-<div class="navbar">
-    <div class="logo">FLIXORA</div>
-    <input type="text" placeholder="Search..." id="search" style="border-radius:20px; padding:5px 10px; border:none;">
-</div>
+    <nav class="fixed top-0 w-full z-50 flex items-center justify-between px-5 py-4 bg-black/90">
+        <h1 class="text-xl font-black text-[#E50914] tracking-tighter">FLIXORA</h1>
+        <div class="flex items-center gap-5">
+            <i class="fa fa-search text-lg" onclick="toggleSearch()"></i>
+            <div class="w-7 h-7 bg-blue-600 rounded"></div>
+        </div>
+    </nav>
 
-<div class="cats">
-    <button class="cat-btn active" onclick="loadMovies('zh', 'tv')">Chinese Romantic</button>
-    <button class="cat-btn" onclick="loadMovies('ko', 'tv')">Korean Drama</button>
-    <button class="cat-btn" onclick="loadMovies('zh', 'movie')">Chinese Action</button>
-    <button class="cat-btn" onclick="loadMovies('id', 'movie', '27')">Indo Horror</button>
-</div>
+    <div class="pt-16">
+        <div id="searchBox" class="px-5 py-2 hidden">
+            <input id="searchInput" type="text" placeholder="Search movies or series..." class="w-full bg-[#111] p-3 rounded border border-red-600/40 outline-none text-white text-sm">
+        </div>
 
-<div class="movie-grid" id="movie-list"></div>
+        <div id="heroSection">
+            <img class="hero-img" src="https://i.ibb.co.com/Mkyq9Jwv/file-00000000e1d87208bc1a1917c37a96bb.png">
+        </div>
 
-<script>
-    const API_KEY = "2d2caca374aecd4dbd0f66adb29dd554";
-    
-    async function loadMovies(lang = 'zh', type = 'tv', genre = '') {
-        const url = `https://api.themoviedb.org/3/discover/${type}?api_key=${API_KEY}&with_original_language=${lang}&with_genres=${genre}&sort_by=popularity.desc&page=1`;
-        const res = await fetch(url);
-        const data = await res.json();
-        const container = document.getElementById('movie-list');
-        container.innerHTML = "";
-        
-        data.results.forEach(m => {
-            container.innerHTML += `
-                <div class="card" onclick="location.href='player.html?id=${m.id}&type=${type}'">
-                    <img src="https://image.tmdb.org/t/p/w500${m.poster_path}">
-                    <div class="card-info">${m.name || m.title}</div>
-                </div>`;
+        <div class="cat-scroll">
+            <div class="cat-tab active" onclick="filterCat('all', this)">All</div>
+            <div class="cat-tab" onclick="filterCat('27', this)">Horror Film</div>
+            <div class="cat-tab" onclick="filterCat('romantic-k', this)">Romantic K-Drama</div>
+            <div class="cat-tab" onclick="filterCat('romantic-c', this)">Romantic C-Drama</div>
+        </div>
+
+        <h3 id="rowTitle" class="px-5 mt-4 font-bold text-sm uppercase tracking-widest text-gray-400">Trending Now</h3>
+        <div id="movieGrid" class="movie-row"></div>
+    </div>
+
+    <div id="detailsModal">
+        <div class="p-6 pt-20 max-w-xl mx-auto">
+            <button onclick="closeDetails()" class="fixed top-6 right-6 text-3xl"><i class="fa fa-times"></i></button>
+            <img id="detBackdrop" class="w-full h-56 object-cover rounded-xl mb-4 shadow-2xl">
+            <h2 id="detTitle" class="text-2xl font-black mb-1"></h2>
+            <p id="detDesc" class="text-gray-400 text-xs leading-relaxed mb-6"></p>
+            <h3 class="text-xs font-bold uppercase border-l-4 border-red-600 pl-3 mb-4">Episodes</h3>
+            <div id="epGrid" class="ep-grid pb-20"></div>
+        </div>
+    </div>
+
+    <div id="player" class="fixed inset-0 bg-black z-[9999] hidden">
+        <div class="player-watermark">
+            <img class="watermark-logo" src="https://i.ibb.co.com/RkpHQDFp/file-00000000a76c7209afe66a306f119a83.png">
+            <div class="watermark-text">FLIXORA</div>
+        </div>
+        <button onclick="closePlayer()" class="absolute top-4 left-4 z-[10001] text-xl"><i class="fa fa-arrow-left"></i></button>
+        <iframe id="videoFrame" class="w-full h-full" allowfullscreen frameborder="0"></iframe>
+    </div>
+
+    <script>
+        const API_KEY = '2d2caca374aecd4dbd0f66adb29dd554';
+        const BASE = 'https://api.themoviedb.org/3';
+        const IMG = 'https://image.tmdb.org/t/p/w342';
+
+        function toggleSearch() {
+            const box = document.getElementById('searchBox');
+            box.classList.toggle('hidden');
+            if(!box.classList.contains('hidden')) document.getElementById('searchInput').focus();
+        }
+
+        document.getElementById('searchInput').addEventListener('keyup', (e) => {
+            if(e.key === 'Enter') search(e.target.value);
         });
-    }
-    loadMovies(); // Default load
-</script>
+
+        async function search(q) {
+            const r = await fetch(`${BASE}/search/multi?api_key=${API_KEY}&query=${q}`);
+            const d = await r.json();
+            document.getElementById('rowTitle').innerText = "Search Results";
+            render(d.results);
+        }
+
+        async function filterCat(cat, el) {
+            document.querySelectorAll('.cat-tab').forEach(t => t.classList.remove('active'));
+            el.classList.add('active');
+            let url = `${BASE}/trending/all/week?api_key=${API_KEY}`;
+            if(cat === '27') url = `${BASE}/discover/movie?api_key=${API_KEY}&with_genres=27`;
+            if(cat === 'romantic-k') url = `${BASE}/discover/tv?api_key=${API_KEY}&with_genres=18&with_original_language=ko`;
+            if(cat === 'romantic-c') url = `${BASE}/discover/tv?api_key=${API_KEY}&with_genres=18&with_original_language=zh`;
+
+            const r = await fetch(url);
+            const d = await r.json();
+            document.getElementById('rowTitle').innerText = el.innerText;
+            render(d.results, cat.includes('romantic') ? 'tv' : 'movie');
+        }
+
+        function render(list, type) {
+            const grid = document.getElementById('movieGrid');
+            grid.innerHTML = list.filter(m => m.poster_path).map(m => `
+                <div class="movie-card" onclick="openDetails('${m.id}', '${m.media_type || type || 'movie'}')">
+                    <div class="poster-wrapper"><img src="${IMG + m.poster_path}"></div>
+                    <div class="movie-title">${m.title || m.name}</div>
+                </div>
+            `).join('');
+        }
+
+        async function openDetails(id, type) {
+            const r = await fetch(`${BASE}/${type}/${id}?api_key=${API_KEY}`);
+            const d = await r.json();
+            document.getElementById('detTitle').innerText = d.name || d.title;
+            document.getElementById('detDesc').innerText = d.overview.substring(0, 180) + '...';
+            document.getElementById('detBackdrop').src = IMG + (d.backdrop_path || d.poster_path);
+            const grid = document.getElementById('epGrid'); grid.innerHTML = '';
+            if(type === 'tv') {
+                for(let i=1; i<=10; i++) grid.innerHTML += `<div class="ep-btn" onclick="play('${id}', 'tv', 1, ${i})">Ep ${i}</div>`;
+            } else {
+                grid.innerHTML = `<div class="ep-btn col-span-full" onclick="play('${id}', 'movie')">Watch Movie</div>`;
+            }
+            document.getElementById('detailsModal').style.display = 'block';
+        }
+
+        function play(id, type, s=1, e=1) {
+            document.getElementById('player').classList.remove('hidden');
+            let src = `https://vidsrc.cc/v2/embed/${type}/${id}`;
+            if(type === 'tv') src += `/${s}/${e}`;
+            document.getElementById('videoFrame').src = src;
+        }
+
+        function closeDetails() { document.getElementById('detailsModal').style.display = 'none'; }
+        function closePlayer() { document.getElementById('player').classList.add('hidden'); document.getElementById('videoFrame').src = ''; }
+
+        filterCat('all', document.querySelector('.cat-tab'));
+    </script>
 </body>
-</html>
+            </html>
