@@ -8,31 +8,20 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
         body { background-color: #000; color: white; font-family: 'Helvetica Neue', Arial, sans-serif; margin: 0; overflow-x: hidden; }
-        
-        /* Netflix Horizontal Row Style */
         .movie-row { display: flex; overflow-x: auto; gap: 12px; padding: 10px 20px; scrollbar-width: none; }
         .movie-row::-webkit-scrollbar { display: none; }
-        
         .movie-card { min-width: 110px; width: 110px; cursor: pointer; transition: 0.3s; }
         .poster-wrapper { aspect-ratio: 2/3; border-radius: 4px; overflow: hidden; background: #1a1a1a; margin-bottom: 6px; }
         .poster-wrapper img { width: 100%; height: 100%; object-fit: cover; }
         .movie-title { font-size: 10px; font-weight: 600; text-align: center; color: #e5e5e5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; height: 30px; }
-
-        /* Clear Banner */
         #heroSection { width: 100%; padding-bottom: 20px; }
         .hero-img { width: 100%; height: auto; display: block; }
-
-        /* Category Filter */
         .cat-scroll { display: flex; overflow-x: auto; gap: 8px; padding: 15px 20px; scrollbar-width: none; }
         .cat-tab { white-space: nowrap; padding: 6px 14px; border-radius: 20px; background: #222; font-size: 11px; font-weight: bold; cursor: pointer; }
         .cat-tab.active { background: #E50914; }
-
-        /* Details Modal */
         #detailsModal { position: fixed; inset: 0; z-index: 9000; background: #000; overflow-y: auto; display: none; }
         .ep-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(70px, 1fr)); gap: 10px; margin-top: 20px; }
         .ep-btn { background: #1f1f1f; padding: 12px; border-radius: 6px; text-align: center; font-size: 12px; border: 1px solid #333; }
-
-        /* Player Branding */
         .player-watermark { position: absolute; top: 12%; right: 5%; text-align: center; z-index: 10002; pointer-events: none; }
         .watermark-logo { width: 35px; }
         .watermark-text { font-size: 11px; font-weight: 900; color: #E50914; }
@@ -52,18 +41,15 @@
         <div id="searchBox" class="px-5 py-2 hidden">
             <input id="searchInput" type="text" placeholder="Search movies or series..." class="w-full bg-[#111] p-3 rounded border border-red-600/40 outline-none text-white text-sm">
         </div>
-
         <div id="heroSection">
             <img class="hero-img" src="https://i.ibb.co.com/Mkyq9Jwv/file-00000000e1d87208bc1a1917c37a96bb.png">
         </div>
-
         <div class="cat-scroll">
             <div class="cat-tab active" onclick="filterCat('all', this)">All</div>
             <div class="cat-tab" onclick="filterCat('27', this)">Horror Film</div>
             <div class="cat-tab" onclick="filterCat('romantic-k', this)">Romantic K-Drama</div>
             <div class="cat-tab" onclick="filterCat('romantic-c', this)">Romantic C-Drama</div>
         </div>
-
         <h3 id="rowTitle" class="px-5 mt-4 font-bold text-sm uppercase tracking-widest text-gray-400">Trending Now</h3>
         <div id="movieGrid" class="movie-row"></div>
     </div>
@@ -141,8 +127,16 @@
             document.getElementById('detDesc').innerText = d.overview.substring(0, 180) + '...';
             document.getElementById('detBackdrop').src = IMG + (d.backdrop_path || d.poster_path);
             const grid = document.getElementById('epGrid'); grid.innerHTML = '';
+            
             if(type === 'tv') {
-                for(let i=1; i<=10; i++) grid.innerHTML += `<div class="ep-btn" onclick="play('${id}', 'tv', 1, ${i})">Ep ${i}</div>`;
+                // Fetching real episode count from Season 1
+                const sR = await fetch(`${BASE}/tv/${id}/season/1?api_key=${API_KEY}`);
+                const sD = await sR.json();
+                if(sD.episodes) {
+                    sD.episodes.forEach(e => {
+                        grid.innerHTML += `<div class="ep-btn" onclick="play('${id}', 'tv', 1, ${e.episode_number})">Ep ${e.episode_number}</div>`;
+                    });
+                }
             } else {
                 grid.innerHTML = `<div class="ep-btn col-span-full" onclick="play('${id}', 'movie')">Watch Movie</div>`;
             }
@@ -162,4 +156,4 @@
         filterCat('all', document.querySelector('.cat-tab'));
     </script>
 </body>
-            </html>
+                </html>
