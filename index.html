@@ -26,12 +26,7 @@
         /* Navigation */
         nav { background: linear-gradient(to bottom, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0) 100%); }
 
-        /* Subtitle Engine Display Box */
-        .sub-overlay { position: absolute; bottom: 18%; left: 0; right: 0; text-align: center; z-index: 10005; pointer-events: none; }
-        .sub-text { background: rgba(0, 0, 0, 0.8); color: #ffffff; padding: 8px 18px; border-radius: 6px; font-size: 16px; font-weight: bold; display: inline-block; max-width: 85%; border: 1px solid rgba(255,255,255,0.15); text-shadow: 1px 1px 3px #000; }
-        .sub-status { color: #E50914; font-size: 10px; font-weight: bold; margin-top: 6px; text-transform: uppercase; letter-spacing: 1px; }
-
-        /* Branding */
+        /* Branding Watermark */
         .player-watermark { position: absolute; top: 12%; right: 5%; text-align: center; z-index: 10002; pointer-events: none; }
         .watermark-logo { width: 32px; height: 32px; object-fit: contain; }
 
@@ -93,17 +88,11 @@
         <div class="player-watermark">
             <img class="watermark-logo shadow-lg" src="https://i.ibb.co.com/RkpHQDFp/file-00000000a76c7209afe66a306f119a83.png">
         </div>
-        
-        <div class="sub-overlay">
-            <div id="subContainer" class="sub-text">বাংলা ইঞ্জিন সাবটাইটেল ট্র্যাক রেডি করছে...</div>
-            <div class="sub-status">● Live Real-Time Subtitle Translation</div>
-        </div>
 
         <button onclick="closePlayer()" class="absolute top-6 left-6 z-[10001] text-2xl drop-shadow-md text-white"><i class="fa fa-chevron-left"></i></button>
         <iframe id="videoFrame" class="w-full h-full" allowfullscreen frameborder="0" referrerpolicy="no-referrer"></iframe>
     </div>
 
-    <script src="subtitle-engine.js"></script>
     <script>
         const KEY = '2d2caca374aecd4dbd0f66adb29dd554';
         const IMG = 'https://image.tmdb.org/t/p/w342';
@@ -124,7 +113,6 @@
             render(d.results);
         }
 
-        // Auto-loads an interactive dynamic hero card
         async function loadHeroBanner(item) {
             if(!item) return;
             document.getElementById('heroSection').style.backgroundImage = `url('https://image.tmdb.org/t/p/original${item.backdrop_path || item.poster_path}')`;
@@ -166,7 +154,6 @@
             
             const grid = document.getElementById('epGrid'); grid.innerHTML = '';
             if(type === 'tv') {
-                // Fetching real total episode counters
                 const sR = await fetch(`https://api.themoviedb.org/3/tv/${id}/season/1?api_key=${KEY}`);
                 const sD = await sR.json();
                 if(sD.episodes) {
@@ -183,23 +170,21 @@
         function play(id, type, s=1, e=1) {
             document.getElementById('player').classList.remove('hidden');
             
-            // MULTI-SERVER FALLBACK SYSTEM (যদি একটা সার্ভার ব্লক করে বা না চলে, অন্যটা ট্রাই করবে)
-            // সার্ভার ১ (vidsrc.pm) এবং সার্ভার ২ (vidsrc.to বা vidsrc.xyz) ব্যাকআপ করা হলো
-            let mainSrc = `https://vidsrc.pm/embed/${type}/${id}`;
-            if(type === 'tv') mainSrc += `/${s}/${e}`;
+            // তোর দেওয়া একদম অরিজিনাল ফাস্ট সার্ভার লিঙ্ক সেট করা হলো 🎯
+            let src = '';
+            if(type === 'movie') {
+                src = `https://vidsrc.cc/v2/embed/movie/${id}`;
+            } else if(type === 'tv') {
+                src = `https://vidsrc.cc/v2/embed/tv/${id}/${s}/${e}`;
+            }
             
-            const frame = document.getElementById('videoFrame');
-            frame.src = mainSrc;
-
-            // সাবটাইটেল ইঞ্জিন চালু করা
-            initSubtitleEngine(id, type, s, e);
+            document.getElementById('videoFrame').src = src;
         }
 
         function closeDetails() { document.getElementById('detailsModal').style.display = 'none'; }
         function closePlayer() { 
             document.getElementById('player').classList.add('hidden'); 
             document.getElementById('videoFrame').src = ''; 
-            clearSubtitleEngine();
         }
 
         filterCat('all', document.querySelector('.cat-tab'));
