@@ -3,73 +3,49 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Flixora | Subtitle Engine</title>
+    <title>Flixora | Home</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
         body { background-color: #000; color: white; font-family: 'Helvetica Neue', Arial, sans-serif; margin: 0; overflow-x: hidden; }
-        
-        /* Layout Styles */
         .movie-row { display: flex; overflow-x: auto; gap: 12px; padding: 10px 20px; scrollbar-width: none; }
         .movie-row::-webkit-scrollbar { display: none; }
         .movie-card { min-width: 110px; width: 110px; cursor: pointer; transition: 0.3s; }
         .poster-wrapper { aspect-ratio: 2/3; border-radius: 6px; overflow: hidden; background: #1a1a1a; margin-bottom: 6px; border: 1px solid #222; }
         .poster-wrapper img { width: 100%; height: 100%; object-fit: cover; }
         .movie-title { font-size: 10px; font-weight: 600; text-align: center; color: #ccc; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; height: 30px; }
-
-        /* Subtitle Engine Overlay */
-        .sub-overlay {
-            position: absolute;
-            bottom: 15%;
-            left: 0;
-            right: 0;
-            text-align: center;
-            z-index: 10005;
-            pointer-events: none;
-        }
-        .sub-text {
-            background: rgba(0, 0, 0, 0.7);
-            color: #ffffff;
-            padding: 4px 12px;
-            border-radius: 4px;
-            font-size: 16px;
-            font-weight: 500;
-            display: inline-block;
-            max-width: 80%;
-            border: 1px solid rgba(255,255,255,0.1);
-        }
-        .sub-status {
-            color: #E50914;
-            font-size: 10px;
-            font-weight: bold;
-            margin-top: 5px;
-            text-transform: uppercase;
-        }
-
-        /* Branding */
-        .player-watermark { position: absolute; top: 12%; right: 5%; text-align: center; z-index: 10002; pointer-events: none; }
-        .watermark-logo { width: 35px; }
-        .watermark-text { font-size: 10px; font-weight: 900; color: #E50914; }
-
-        /* Modal & Tabs */
+        #heroSection { width: 100%; padding-bottom: 10px; }
+        .hero-img { width: 100%; height: auto; display: block; }
+        .cat-scroll { display: flex; overflow-x: auto; gap: 8px; padding: 15px 20px; scrollbar-width: none; }
+        .cat-tab { white-space: nowrap; padding: 6px 16px; border-radius: 20px; background: #222; font-size: 11px; font-weight: bold; cursor: pointer; border: 1px solid #333; }
+        .cat-tab.active { background: #E50914; border-color: #E50914; }
         #detailsModal { position: fixed; inset: 0; z-index: 9000; background: #000; overflow-y: auto; display: none; }
         .ep-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(75px, 1fr)); gap: 10px; margin-top: 20px; }
         .ep-btn { background: #1a1a1a; padding: 14px; border-radius: 8px; text-align: center; font-size: 13px; font-weight: bold; border: 1px solid #333; }
-        .cat-scroll { display: flex; overflow-x: auto; gap: 8px; padding: 15px 20px; scrollbar-width: none; }
-        .cat-tab { white-space: nowrap; padding: 6px 16px; border-radius: 20px; background: #222; font-size: 11px; font-weight: bold; cursor: pointer; }
-        .cat-tab.active { background: #E50914; }
+        
+        /* Subtitle Styling */
+        .sub-overlay { position: absolute; bottom: 15%; left: 0; right: 0; text-align: center; z-index: 10005; pointer-events: none; }
+        .sub-text { background: rgba(0, 0, 0, 0.75); color: #ffffff; padding: 6px 16px; border-radius: 6px; font-size: 16px; font-weight: bold; display: inline-block; max-width: 85%; border: 1px solid rgba(255,255,255,0.15); text-shadow: 1px 1px 2px #000; }
+        .sub-status { color: #E50914; font-size: 10px; font-weight: bold; margin-top: 5px; text-transform: uppercase; letter-spacing: 1px; }
+
+        .player-watermark { position: absolute; top: 12%; right: 5%; text-align: center; z-index: 10002; pointer-events: none; }
+        .watermark-logo { width: 35px; }
+        .watermark-text { font-size: 10px; font-weight: 900; color: #E50914; }
     </style>
 </head>
 <body>
 
-    <nav class="fixed top-0 w-full z-50 flex items-center justify-between px-5 py-4 bg-black/95">
-        <h1 class="text-xl font-black text-[#E50914]">FLIXORA</h1>
-        <i class="fa fa-search text-lg" onclick="toggleSearch()"></i>
+    <nav class="fixed top-0 w-full z-50 flex items-center justify-between px-5 py-4 bg-black/95 shadow-xl">
+        <h1 class="text-xl font-black text-[#E50914] tracking-tighter">FLIXORA</h1>
+        <div class="flex items-center gap-5">
+            <i class="fa fa-search text-lg" onclick="toggleSearch()"></i>
+            <div class="w-8 h-8 bg-blue-600 rounded-lg"></div>
+        </div>
     </nav>
 
     <div class="pt-16">
         <div id="searchBox" class="px-5 py-2 hidden">
-            <input id="searchInput" type="text" placeholder="Search..." class="w-full bg-[#111] p-3 rounded-lg border border-red-600/30 outline-none text-sm">
+            <input id="searchInput" type="text" placeholder="Search..." class="w-full bg-[#111] p-3 rounded-lg border border-red-600/30 outline-none text-white text-sm">
         </div>
         <div id="heroSection">
             <img class="hero-img" src="https://i.ibb.co.com/Mkyq9Jwv/file-00000000e1d87208bc1a1917c37a96bb.png">
@@ -85,8 +61,8 @@
 
     <div id="detailsModal">
         <div class="p-6 pt-24 max-w-xl mx-auto">
-            <button onclick="closeDetails()" class="fixed top-6 right-6 text-3xl opacity-50"><i class="fa fa-times-circle"></i></button>
-            <img id="detBackdrop" class="w-full h-56 object-cover rounded-2xl mb-5 shadow-2xl">
+            <button onclick="closeDetails()" class="fixed top-6 right-6 text-3xl text-white/50"><i class="fa fa-times-circle"></i></button>
+            <img id="detBackdrop" class="w-full h-56 object-cover rounded-2xl mb-5 border border-white/10">
             <h2 id="detTitle" class="text-2xl font-black mb-2"></h2>
             <p id="detDesc" class="text-gray-400 text-xs leading-relaxed mb-8"></p>
             <h3 class="text-xs font-bold uppercase border-l-4 border-red-600 pl-3 mb-4">Select Episode</h3>
@@ -101,13 +77,15 @@
         </div>
         
         <div class="sub-overlay">
-            <div id="subContainer" class="sub-text">Bengali Subtitle Engine: অনুবাদের কাজ চলছে...</div>
-            <div class="sub-status">● Live Translation Active</div>
+            <div id="subContainer" class="sub-text">বাংলা সাবটাইটেল ইঞ্জিন লোড হচ্ছে...</div>
+            <div class="sub-status">● Live AI Translation Active</div>
         </div>
 
         <button onclick="closePlayer()" class="absolute top-6 left-6 z-[10001] text-2xl"><i class="fa fa-chevron-left"></i></button>
         <iframe id="videoFrame" class="w-full h-full" allowfullscreen frameborder="0"></iframe>
     </div>
+
+    <script src="subtitle-engine.js"></script>
 
     <script>
         const KEY = '2d2caca374aecd4dbd0f66adb29dd554';
@@ -140,15 +118,14 @@
         }
 
         async function openDetails(id, type) {
-            const r = await fetch(`https://api.themoviedb.org/3/${type}/${id}?api_key=${KEY}`);
-            const d = await r.json();
-            document.getElementById('detTitle').innerText = d.name || d.title;
-            document.getElementById('detDesc').innerText = d.overview.substring(0, 160) + '...';
-            document.getElementById('detBackdrop').src = IMG + (d.backdrop_path || d.poster_path);
+            const r = await fetch://api.themoviedb.org/3/${type}/${id}?api_key=${KEY}`);
+            const rData = await r.json();
+            document.getElementById('detTitle').innerText = rData.name || rData.title;
+            document.getElementById('detDesc').innerText = rData.overview.substring(0, 160) + '...';
+            document.getElementById('detBackdrop').src = IMG + (rData.backdrop_path || rData.poster_path);
             
             const grid = document.getElementById('epGrid'); grid.innerHTML = '';
             if(type === 'tv') {
-                // Fixed Episode Count Logic
                 const sR = await fetch(`https://api.themoviedb.org/3/tv/${id}/season/1?api_key=${KEY}`);
                 const sD = await sR.json();
                 if(sD.episodes) {
@@ -164,20 +141,24 @@
 
         function play(id, type, s=1, e=1) {
             document.getElementById('player').classList.remove('hidden');
-            let src = `https://vidsrc.cc/v2/embed/${type}/${id}`;
+            
+            // পূর্বের ফাস্ট ও ওয়ার্কিং ওল্ড সার্ভার ব্যাক করা হলো
+            let src = `https://vidsrc.to/embed/${type}/${id}`;
             if(type === 'tv') src += `/${s}/${e}`;
             document.getElementById('videoFrame').src = src;
             
-            // Subtitle Auto-Update Logic (Simulation)
-            const sub = document.getElementById('subContainer');
-            setTimeout(() => { sub.innerText = "স্বাগতম! সাবটাইটেল লোড হচ্ছে..."; }, 2000);
-            setTimeout(() => { sub.innerText = "উপভোগ করুন আপনার প্রিয় নাটক বাংলা সাবটাইটেল সহ।"; }, 5000);
+            // সাবটাইটেল ট্র্যাকিং শুরু করা হলো
+            initSubtitleEngine(id, type, s, e);
         }
 
         function closeDetails() { document.getElementById('detailsModal').style.display = 'none'; }
-        function closePlayer() { document.getElementById('player').classList.add('hidden'); document.getElementById('videoFrame').src = ''; }
+        function closePlayer() { 
+            document.getElementById('player').classList.add('hidden'); 
+            document.getElementById('videoFrame').src = ''; 
+            clearSubtitleEngine();
+        }
 
         filterCat('all', document.querySelector('.cat-tab'));
     </script>
 </body>
-    </html>
+</html>
