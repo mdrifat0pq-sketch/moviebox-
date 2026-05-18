@@ -9,7 +9,7 @@
     <style>
         body { background-color: #000; color: white; font-family: 'Helvetica Neue', Arial, sans-serif; margin: 0; overflow-x: hidden; }
         
-        /* Netflix Style Slider */
+        /* Multi-Row Slider Layout */
         .movie-row { display: flex; overflow-x: auto; gap: 14px; padding: 10px 20px; scrollbar-width: none; }
         .movie-row::-webkit-scrollbar { display: none; }
         .movie-card { min-width: 115px; width: 115px; cursor: pointer; transition: transform 0.3s; }
@@ -18,35 +18,41 @@
         .poster-wrapper img { width: 100%; height: 100%; object-fit: cover; }
         .movie-title { font-size: 11px; font-weight: 600; text-align: center; color: #b3b3b3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; height: 32px; }
 
-        /* Netflix Immersive Hero Banner */
-        #heroSection { position: relative; width: 100%; height: 45vh; background-size: cover; background-position: center; display: flex; align-items: flex-end; padding: 20px; }
-        #heroSection::before { content: ''; position: absolute; inset: 0; background: linear-gradient(to top, #000 10%, rgba(0,0,0,0.4) 50%, rgba(0,0,0,0.7) 100%); }
+        /* Specific Category Full Grid Layout (ক্যাটাগরি পেজের জন্য নতুন গ্রিড ভিউ) */
+        .category-view-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 14px; padding: 20px; }
+
+        /* Netflix Immersive Full Screen Hero Banner */
+        #heroSection { position: relative; width: 100%; height: 48vh; background-size: cover; background-position: center; display: flex; align-items: flex-end; padding: 20px; }
+        #heroSection::before { content: ''; position: absolute; inset: 0; background: linear-gradient(to top, #000 15%, rgba(0,0,0,0.2) 50%, rgba(0,0,0,0.5) 100%); }
         .hero-content { position: relative; z-index: 10; max-width: 90%; }
 
-        /* Navigation */
-        nav { background: linear-gradient(to bottom, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0) 100%); }
+        nav { background: linear-gradient(to bottom, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0) 100%); }
 
-        /* Branding Watermark */
-        .player-watermark { position: absolute; top: 12%; right: 5%; text-align: center; z-index: 10002; pointer-events: none; }
-        .watermark-logo { width: 32px; height: 32px; object-fit: contain; }
+        /* Custom Mini Watermark Icon */
+        .player-watermark { position: absolute; top: 4%; right: 4%; z-index: 10002; pointer-events: none; }
+        .watermark-logo { width: 30px; height: 30px; object-fit: contain; filter: drop-shadow(0px 2px 4px rgba(0,0,0,0.6)); }
 
+        /* Episode Modal */
         #detailsModal { position: fixed; inset: 0; z-index: 9000; background: #000; overflow-y: auto; display: none; }
         .ep-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(75px, 1fr)); gap: 10px; margin-top: 20px; }
-        .ep-btn { background: #181818; padding: 14px; border-radius: 6px; text-align: center; font-size: 13px; font-weight: bold; border: 1px solid #262626; }
+        .ep-btn { background: #181818; padding: 14px; border-radius: 6px; text-align: center; font-size: 13px; font-weight: bold; border: 1px solid #262626; cursor: pointer; }
         
+        /* Category Navigation */
         .cat-scroll { display: flex; overflow-x: auto; gap: 8px; padding: 15px 20px; scrollbar-width: none; }
         .cat-scroll::-webkit-scrollbar { display: none; }
         .cat-tab { white-space: nowrap; padding: 6px 16px; border-radius: 20px; background: #222; font-size: 11px; font-weight: bold; cursor: pointer; border: 1px solid #333; }
         .cat-tab.active { background: #E50914; border-color: #E50914; }
+        
+        .row-heading { font-size: 12px; font-weight: bold; text-transform: uppercase; tracking-widest: 0.1em; color: #E50914; padding-left: 12px; margin-top: 20px; border-left: 4px solid #E50914; margin-left: 20px; }
     </style>
 </head>
 <body>
 
     <nav class="fixed top-0 w-full z-50 flex items-center justify-between px-5 py-4 transition-all duration-300">
-        <h1 class="text-xl font-black text-[#E50914] tracking-tighter">FLIXORA</h1>
+        <h1 class="text-xl font-black text-[#E50914] tracking-tighter cursor-pointer" onclick="switchCategory('all', document.querySelector('.cat-tab'))">FLIXORA</h1>
         <div class="flex items-center gap-5">
             <i class="fa fa-search text-lg cursor-pointer" onclick="toggleSearch()"></i>
-            <img class="w-7 h-7 object-contain" src="https://i.ibb.co.com/RkpHQDFp/file-00000000a76c7209afe66a306f119a83.png" alt="Profile">
+            <img class="w-7 h-7 object-contain" src="https://i.ibb.co.com/RkpHQDFp/file-00000000a76c7209afe66a306f119a83.png" alt="Profile Logo">
         </div>
     </nav>
 
@@ -57,25 +63,46 @@
 
         <div id="heroSection" style="background-image: url('https://image.tmdb.org/t/p/original/wwemzKWzjKYJFfCeiBwM8n46I7F.jpg');">
             <div class="hero-content">
-                <h2 id="heroTitle" class="text-2xl font-black mb-2 text-white drop-shadow-md">Loading Spotlight...</h2>
+                <h2 id="heroTitle" class="text-2xl font-black mb-1 text-white drop-shadow-md">Loading Spotlight...</h2>
                 <p id="heroDesc" class="text-gray-300 text-xs line-clamp-2 mb-4 max-w-sm drop-shadow"></p>
-                <button id="heroPlayBtn" class="bg-white text-black font-bold text-xs px-5 py-2.5 rounded flex items-center gap-2 shadow-lg"><i class="fa fa-play"></i> Play</button>
+                <button id="heroPlayBtn" class="bg-white text-black font-bold text-xs px-5 py-2.5 rounded flex items-center gap-2 shadow-lg hover:bg-gray-200 transition"><i class="fa fa-play"></i> Play</button>
             </div>
         </div>
 
         <div class="cat-scroll">
-            <div class="cat-tab active" onclick="filterCat('all', this)">All</div>
-            <div class="cat-tab" onclick="filterCat('romantic-k', this)">K-Drama</div>
-            <div class="cat-tab" onclick="filterCat('romantic-c', this)">C-Drama</div>
+            <div class="cat-tab active" onclick="switchCategory('all', this)">All</div>
+            <div class="cat-tab" onclick="switchCategory('kdrama', this)">K-Drama</div>
+            <div class="cat-tab" onclick="switchCategory('cdrama', this)">C-Drama</div>
+            <div class="cat-tab" onclick="switchCategory('idhorror', this)">Indonesian Horror</div>
+            <div class="cat-tab" onclick="switchCategory('zhhorror', this)">Chinese Horror</div>
+            <div class="cat-tab" onclick="switchCategory('zhthriller', this)">Chinese Thriller</div>
         </div>
 
-        <h3 id="rowTitle" class="px-5 mt-4 font-bold text-xs uppercase tracking-widest text-red-600">Trending Now</h3>
-        <div id="movieGrid" class="movie-row"></div>
+        <div class="flex items-center justify-between px-5 mt-2">
+            <h2 id="currentViewTitle" class="text-xs font-bold uppercase tracking-wider text-gray-400">Home Showcase</h2>
+            <button onclick="handleRefreshBtn()" class="text-xs bg-[#111] border border-[#333] px-4 py-1.5 rounded-full text-gray-300 active:scale-95 transition">
+                <i class="fa fa-refresh mr-1"></i> Refresh Content
+            </button>
+        </div>
+
+        <div id="homeRowsContainer" class="mt-4">
+            <div id="row-all"><h3 class="row-heading">Trending Now</h3><div id="grid-all" class="movie-row"></div></div>
+            <div id="row-kdrama"><h3 class="row-heading">K-Drama Series</h3><div id="grid-kdrama" class="movie-row"></div></div>
+            <div id="row-cdrama"><h3 class="row-heading">C-Drama Series</h3><div id="grid-cdrama" class="movie-row"></div></div>
+            <div id="row-idhorror"><h3 class="row-heading">Indonesian Horror</h3><div id="grid-idhorror" class="movie-row"></div></div>
+            <div id="row-zhhorror"><h3 class="row-heading">Chinese Horror</h3><div id="grid-zhhorror" class="movie-row"></div></div>
+            <div id="row-zhthriller"><h3 class="row-heading">Chinese Thriller</h3><div id="grid-zhthriller" class="movie-row"></div></div>
+        </div>
+
+        <div id="singleCategoryView" class="hidden mt-4">
+            <h3 id="singleCategoryTitle" class="row-heading">Category Name</h3>
+            <div id="singleCategoryGrid" class="category-view-grid"></div>
+        </div>
     </div>
 
     <div id="detailsModal">
         <div class="p-6 pt-24 max-w-xl mx-auto">
-            <button onclick="closeDetails()" class="fixed top-6 right-6 text-3xl text-white/60"><i class="fa fa-times-circle"></i></button>
+            <button onclick="closeDetails()" class="fixed top-6 right-6 text-3xl text-white/60 hover:text-white"><i class="fa fa-times-circle"></i></button>
             <img id="detBackdrop" class="w-full h-56 object-cover rounded-2xl mb-5 shadow-2xl border border-white/10">
             <h2 id="detTitle" class="text-2xl font-black mb-2"></h2>
             <p id="detDesc" class="text-gray-400 text-xs leading-relaxed mb-6"></p>
@@ -86,20 +113,32 @@
 
     <div id="player" class="fixed inset-0 bg-black z-[9999] hidden">
         <div class="player-watermark">
-            <img class="watermark-logo shadow-lg" src="https://i.ibb.co.com/RkpHQDFp/file-00000000a76c7209afe66a306f119a83.png">
+            <img class="watermark-logo" src="https://i.ibb.co.com/RkpHQDFp/file-00000000a76c7209afe66a306f119a83.png" alt="Watermark">
         </div>
-
-        <button onclick="closePlayer()" class="absolute top-6 left-6 z-[10001] text-2xl drop-shadow-md text-white"><i class="fa fa-chevron-left"></i></button>
-        <iframe id="videoFrame" class="w-full h-full" allowfullscreen frameborder="0" referrerpolicy="no-referrer"></iframe>
+        <button onclick="closePlayer()" class="absolute top-6 left-6 z-[10001] text-2xl drop-shadow-md text-white hover:text-red-600 transition"><i class="fa fa-chevron-left"></i></button>
+        <iframe id="videoFrame" class="w-full h-full" allowfullscreen frameborder="0"></iframe>
     </div>
 
     <script>
         const KEY = '2d2caca374aecd4dbd0f66adb29dd554';
         const IMG = 'https://image.tmdb.org/t/p/w342';
+        let currentActiveTab = 'all';
+
+        // ক্যাটাগরি ওয়াইজ ডাইনামিক এপিআই রিকোয়েস্ট এন্ডপয়েন্ট জেনারেটর
+        function getCategoryUrl(cat, page = 1) {
+            switch(cat) {
+                case 'all': return `https://api.themoviedb.org/3/trending/all/week?api_key=${KEY}&page=${page}`;
+                case 'kdrama': return `https://api.themoviedb.org/3/discover/tv?api_key=${KEY}&with_genres=18&with_original_language=ko&page=${page}`;
+                case 'cdrama': return `https://api.themoviedb.org/3/discover/tv?api_key=${KEY}&with_genres=18&with_original_language=zh&page=${page}`;
+                case 'idhorror': return `https://api.themoviedb.org/3/discover/movie?api_key=${KEY}&with_genres=27&with_original_language=id&page=${page}`;
+                case 'zhhorror': return `https://api.themoviedb.org/3/discover/movie?api_key=${KEY}&with_genres=27&with_original_language=zh&page=${page}`;
+                case 'zhthriller': return `https://api.themoviedb.org/3/discover/movie?api_key=${KEY}&with_genres=53&with_original_language=zh&page=${page}`;
+                default: return `https://api.themoviedb.org/3/trending/all/week?api_key=${KEY}&page=${page}`;
+            }
+        }
 
         function toggleSearch() {
-            const box = document.getElementById('searchBox');
-            box.classList.toggle('hidden');
+            document.getElementById('searchBox').classList.toggle('hidden');
         }
 
         document.getElementById('searchInput').addEventListener('keyup', (e) => {
@@ -109,57 +148,142 @@
         async function search(q) {
             const r = await fetch(`https://api.themoviedb.org/3/search/multi?api_key=${KEY}&query=${q}`);
             const d = await r.json();
-            document.getElementById('rowTitle').innerText = "Search Results";
-            render(d.results);
-        }
-
-        async function loadHeroBanner(item) {
-            if(!item) return;
-            document.getElementById('heroSection').style.backgroundImage = `url('https://image.tmdb.org/t/p/original${item.backdrop_path || item.poster_path}')`;
-            document.getElementById('heroTitle').innerText = item.title || item.name;
-            document.getElementById('heroDesc').innerText = item.overview || "";
-            document.getElementById('heroPlayBtn').onclick = () => openDetails(item.id, item.media_type || 'movie');
-        }
-
-        async function filterCat(cat, el) {
-            document.querySelectorAll('.cat-tab').forEach(t => t.classList.remove('active'));
-            el.classList.add('active');
-            let url = `https://api.themoviedb.org/3/trending/all/week?api_key=${KEY}`;
-            if(cat === 'romantic-k') url = `https://api.themoviedb.org/3/discover/tv?api_key=${KEY}&with_genres=18&with_original_language=ko`;
-            if(cat === 'romantic-c') url = `https://api.themoviedb.org/3/discover/tv?api_key=${KEY}&with_genres=18&with_original_language=zh`;
             
-            const r = await fetch(url);
-            const d = await r.json();
-            document.getElementById('rowTitle').innerText = el.innerText;
-            render(d.results, cat.includes('romantic') ? 'tv' : 'movie');
-            if(d.results.length > 0 && cat === 'all') loadHeroBanner(d.results[0]);
+            document.getElementById('homeRowsContainer').classList.add('hidden');
+            const targetView = document.getElementById('singleCategoryView');
+            targetView.classList.remove('hidden');
+            
+            document.getElementById('singleCategoryTitle').innerText = `Search Results for: ${q}`;
+            renderGridHtml(d.results, 'movie', 'singleCategoryGrid');
         }
 
-        function render(list, type) {
-            const grid = document.getElementById('movieGrid');
-            grid.innerHTML = list.filter(m => m.poster_path).map(m => `
-                <div class="movie-card" onclick="openDetails('${m.id}', '${m.media_type || type || 'movie'}')">
+        // ক্যাটাগরি সুইচিং ট্রিগার (ক্লিক করলে ডেডিকেটেড পেজ লুক আসবে)
+        async function switchCategory(catId, el) {
+            currentActiveTab = catId;
+            document.querySelectorAll('.cat-tab').forEach(t => t.classList.remove('active'));
+            if(el) el.classList.add('active');
+
+            const rowsContainer = document.getElementById('homeRowsContainer');
+            const singleView = document.getElementById('singleCategoryView');
+
+            if(catId === 'all') {
+                rowsContainer.classList.remove('hidden');
+                singleView.classList.add('hidden');
+                document.getElementById('currentViewTitle').innerText = "Home Showcase";
+                loadAllRows(false); // রেগুলার হোম পেজ রেন্ডার
+            } else {
+                rowsContainer.classList.add('hidden');
+                singleView.classList.remove('hidden');
+                document.getElementById('currentViewTitle').innerText = `Viewing ${el.innerText}`;
+                document.getElementById('singleCategoryTitle').innerText = `${el.innerText} Catalog`;
+                
+                // আলাদা পেজে আনলিমিটেড মিক্স স্যাম্পলের জন্য ২টা র্যান্ডম এপিআই পেজ কম্বাইন করে ৫০+ কন্টেন্ট জেনারেট
+                const randomPage1 = Math.floor(Math.random() * 5) + 1;
+                const randomPage2 = randomPage1 + 1;
+                
+                const targetType = (catId === 'kdrama' || catId === 'cdrama') ? 'tv' : 'movie';
+                
+                document.getElementById('singleCategoryGrid').innerHTML = '<div class="col-span-full text-xs text-gray-500 p-5 text-center">Loading Content Catalog...</div>';
+                
+                try {
+                    const [res1, res2] = await Promise.all([
+                        fetch(getCategoryUrl(catId, randomPage1)).then(r => r.json()),
+                        fetch(getCategoryUrl(catId, randomPage2)).then(r => r.json())
+                    ]);
+                    const combinedData = [...res1.results, ...res2.results];
+                    renderGridHtml(combinedData, targetType, 'singleCategoryGrid');
+                } catch(e) {
+                    document.getElementById('singleCategoryGrid').innerHTML = '<div class="col-span-full text-xs text-red-500 text-center">Error loading stream array.</div>';
+                }
+            }
+        }
+
+        // রিফ্রেশ অ্যাকশন (ক্লিক করলে প্রতিবার একদম র্যান্ডম নতুন তথ্য পুশ করবে)
+        function handleRefreshBtn() {
+            if(currentActiveTab === 'all') {
+                loadAllRows(true); // ট্রু পাস করলে হোম পেজেও র্যান্ডম ডেটা রিলোড হবে
+            } else {
+                const activeEl = document.querySelector('.cat-tab.active');
+                switchCategory(currentActiveTab, activeEl);
+            }
+        }
+
+        // হোমপেজের ৬টি লাইনের অটো-লোড হ্যান্ডলার
+        async function loadAllRows(isRandomize = false) {
+            const pageNum = isRandomize ? Math.floor(Math.random() * 8) + 1 : 1;
+
+            // ১. Trending Line
+            fetch(getCategoryUrl('all', pageNum)).then(r => r.json()).then(d => {
+                renderListHtml(d.results, 'movie', 'grid-all');
+                if(d.results.length > 0 && !isRandomize) loadHeroBanner(d.results[0]);
+            });
+
+            // ২. K-Drama Line
+            fetch(getCategoryUrl('kdrama', pageNum)).then(r => r.json()).then(d => renderListHtml(d.results, 'tv', 'grid-kdrama'));
+
+            // ৩. C-Drama Line
+            fetch(getCategoryUrl('cdrama', pageNum)).then(r => r.json()).then(d => renderListHtml(d.results, 'tv', 'grid-cdrama'));
+
+            // ৪. Indonesian Horror Line
+            fetch(getCategoryUrl('idhorror', pageNum)).then(r => r.json()).then(d => renderListHtml(d.results, 'movie', 'grid-idhorror'));
+
+            // ৫. Chinese Horror Line
+            fetch(getCategoryUrl('zhhorror', pageNum)).then(r => r.json()).then(d => renderListHtml(d.results, 'movie', 'grid-zhhorror'));
+
+            // ৬. Chinese Thriller Line
+            fetch(getCategoryUrl('zhthriller', pageNum)).then(r => r.json()).then(d => renderListHtml(d.results, 'movie', 'grid-zhthriller'));
+        }
+
+        // হরাইজন্টাল রো রেন্ডারার (হোমপেজ স্লাইডারের জন্য ৬-৭টা বা তার বেশি দেখাবে)
+        function renderListHtml(list, defaultType, targetGridId) {
+            const grid = document.getElementById(targetGridId);
+            const validItems = list.filter(m => m.poster_path);
+            grid.innerHTML = validItems.map(m => `
+                <div class="movie-card" onclick="openDetails('${m.id}', '${m.media_type || defaultType}')">
                     <div class="poster-wrapper"><img src="${IMG + m.poster_path}"></div>
                     <div class="movie-title">${m.title || m.name}</div>
                 </div>
             `).join('');
         }
 
+        // নতুন ডেডিকেটেড পেজ গ্রিড রেন্ডারার (বড় স্ক্রিন ক্যাটাগরি ভিউয়ের জন্য)
+        function renderGridHtml(list, defaultType, targetGridId) {
+            const grid = document.getElementById(targetGridId);
+            const uniqueList = list.filter((item, index, self) => index === self.findIndex((t) => t.id === item.id) && item.poster_path);
+            
+            grid.innerHTML = uniqueList.map(m => `
+                <div class="w-full cursor-pointer transition active:scale-95 mb-2" onclick="openDetails('${m.id}', '${m.media_type || defaultType}')">
+                    <div class="poster-wrapper" style="width:100% !important;"><img src="${IMG + m.poster_path}"></div>
+                    <div class="movie-title mt-1">${m.title || m.name}</div>
+                </div>
+            `).join('');
+        }
+
+        async function loadHeroBanner(item) {
+            if(!item) return;
+            document.getElementById('heroSection').style.backgroundImage = `url('https://image.tmdb.org/t/p/original${item.backdrop_path || item.poster_path}')`;
+            document.getElementById('heroTitle').innerText = item.title || item.name;
+            document.getElementById('heroDesc').innerText = item.overview || "Watch now on Flixora.";
+            document.getElementById('heroPlayBtn').onclick = () => openDetails(item.id, item.media_type || 'movie');
+        }
+
         async function openDetails(id, type) {
             const r = await fetch(`https://api.themoviedb.org/3/${type}/${id}?api_key=${KEY}`);
             const d = await r.json();
             document.getElementById('detTitle').innerText = d.name || d.title;
-            document.getElementById('detDesc').innerText = d.overview ? d.overview.substring(0, 160) + '...' : '';
+            document.getElementById('detDesc').innerText = d.overview ? d.overview.substring(0, 160) + '...' : 'Watch full stream inside.';
             document.getElementById('detBackdrop').src = `https://image.tmdb.org/t/p/w780${d.backdrop_path || d.poster_path}`;
             
             const grid = document.getElementById('epGrid'); grid.innerHTML = '';
-            if(type === 'tv') {
+            if(type === 'tv' || d.number_of_seasons) {
                 const sR = await fetch(`https://api.themoviedb.org/3/tv/${id}/season/1?api_key=${KEY}`);
                 const sD = await sR.json();
-                if(sD.episodes) {
+                if(sD.episodes && sD.episodes.length > 0) {
                     sD.episodes.forEach(e => {
                         grid.innerHTML += `<div class="ep-btn" onclick="play('${id}', 'tv', 1, ${e.episode_number})">Ep ${e.episode_number}</div>`;
                     });
+                } else {
+                    grid.innerHTML = `<div class="ep-btn col-span-full">Episodes Coming Soon</div>`;
                 }
             } else {
                 grid.innerHTML = `<div class="ep-btn col-span-full" onclick="play('${id}', 'movie')">Watch Full Movie</div>`;
@@ -168,17 +292,17 @@
         }
 
         function play(id, type, s=1, e=1) {
-            document.getElementById('player').classList.remove('hidden');
+            const player = document.getElementById('player');
+            const videoFrame = document.getElementById('videoFrame');
+            player.classList.remove('hidden');
             
-            // তোর দেওয়া একদম অরিজিনাল ফাস্ট সার্ভার লিঙ্ক সেট করা হলো 🎯
             let src = '';
             if(type === 'movie') {
                 src = `https://vidsrc.cc/v2/embed/movie/${id}`;
             } else if(type === 'tv') {
                 src = `https://vidsrc.cc/v2/embed/tv/${id}/${s}/${e}`;
             }
-            
-            document.getElementById('videoFrame').src = src;
+            videoFrame.src = src;
         }
 
         function closeDetails() { document.getElementById('detailsModal').style.display = 'none'; }
@@ -187,7 +311,9 @@
             document.getElementById('videoFrame').src = ''; 
         }
 
-        filterCat('all', document.querySelector('.cat-tab'));
+        window.addEventListener('DOMContentLoaded', () => {
+            loadAllRows(false);
+        });
     </script>
 </body>
-    </html>
+                </html>
