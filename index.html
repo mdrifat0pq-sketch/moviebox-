@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <meta name="monetag" content="b93d22f923b94cf3df3fcde3fdf30238">
+    
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Flixora | Premium Stream</title>
@@ -78,6 +80,12 @@
             <div class="cat-tab" onclick="switchCategory('zhthriller', this)">Chinese Thriller</div>
         </div>
 
+        <div class="px-5 my-2">
+            <div class="w-full bg-[#111] rounded-lg border border-[#222] overflow-hidden flex items-center justify-center" style="min-height: 60px;">
+                <span class="text-[10px] text-gray-600 uppercase tracking-widest">Sponsored Advertisement</span>
+            </div>
+        </div>
+
         <div class="flex items-center justify-between px-5 mt-2">
             <h2 id="currentViewTitle" class="text-xs font-bold uppercase tracking-wider text-gray-400">Home Showcase</h2>
             <button onclick="handleRefreshBtn()" class="text-xs bg-[#111] border border-[#333] px-4 py-1.5 rounded-full text-gray-300 active:scale-95 transition">
@@ -122,6 +130,7 @@
     <script>
         const KEY = '2d2caca374aecd4dbd0f66adb29dd554';
         const IMG = 'https://image.tmdb.org/t/p/w342';
+        const SMART_LINK = 'https://omg10.com/4/11039077'; // তোর দেওয়া স্মার্টলিংক
         let currentActiveTab = 'all';
 
         // ক্যাটাগরি ওয়াইজ ডাইনামিক এপিআই রিকোয়েস্ট এন্ডপয়েন্ট জেনারেটর
@@ -280,15 +289,32 @@
                 const sD = await sR.json();
                 if(sD.episodes && sD.episodes.length > 0) {
                     sD.episodes.forEach(e => {
-                        grid.innerHTML += `<div class="ep-btn" onclick="play('${id}', 'tv', 1, ${e.episode_number})">Ep ${e.episode_number}</div>`;
+                        // ড্রামার জন্য রিওয়ার্ডেড পপআপ সহ প্লে ট্রিগার
+                        grid.innerHTML += `<div class="ep-btn" onclick="triggerDramaAd('${id}', 1, ${e.episode_number})">Ep ${e.episode_number}</div>`;
                     });
                 } else {
                     grid.innerHTML = `<div class="ep-btn col-span-full">Episodes Coming Soon</div>`;
                 }
             } else {
-                grid.innerHTML = `<div class="ep-btn col-span-full" onclick="play('${id}', 'movie')">Watch Full Movie</div>`;
+                // মুভির জন্য সরাসরি স্মার্টলিংক ট্রিগার
+                grid.innerHTML = `<div class="ep-btn col-span-full" onclick="triggerMovieAd('${id}')">Watch Full Movie</div>`;
             }
             document.getElementById('detailsModal').style.display = 'block';
+        }
+
+        // মুভি প্লে ক্লিক করলে—স্মার্টলিংক ওপেন হবে এবং ব্যাকগ্রাউন্ডে প্লেয়ার চালু হবে
+        function triggerMovieAd(id) {
+            window.open(SMART_LINK, '_blank'); // নতুন ট্যাবে স্মার্টলিংক ওপেন হবে
+            play(id, 'movie'); // মেইন অ্যাপে মুভি রান হবে
+        }
+
+        // ড্রামা এপিসোড ক্লিক করলে—রিওয়ার্ডেড ডায়ালগ পপআপ আসবে
+        function triggerDramaAd(id, s, e) {
+            const confirmAd = confirm("Watch a short video to unlock this episode!");
+            if (confirmAd) {
+                window.open(SMART_LINK, '_blank'); // রিওয়ার্ডেড ট্রাফিকের জন্য স্মার্টলিংক বা ভিডিও জোনে রিডাইরেক্ট
+                play(id, 'tv', s, e); // ভিডিও আনলক হয়ে প্লে হবে
+            }
         }
 
         function play(id, type, s=1, e=1) {
@@ -316,4 +342,4 @@
         });
     </script>
 </body>
-                </html>
+    </html>
