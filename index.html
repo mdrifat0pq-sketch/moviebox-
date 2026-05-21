@@ -80,12 +80,6 @@
             <div class="cat-tab" onclick="switchCategory('zhthriller', this)">Chinese Thriller</div>
         </div>
 
-        <div class="px-5 my-2">
-            <div class="w-full bg-[#111] rounded-lg border border-[#222] overflow-hidden flex items-center justify-center" style="min-height: 60px;">
-                <span class="text-[10px] text-gray-600 uppercase tracking-widest">Sponsored Advertisement</span>
-            </div>
-        </div>
-
         <div class="flex items-center justify-between px-5 mt-2">
             <h2 id="currentViewTitle" class="text-xs font-bold uppercase tracking-wider text-gray-400">Home Showcase</h2>
             <button onclick="handleRefreshBtn()" class="text-xs bg-[#111] border border-[#333] px-4 py-1.5 rounded-full text-gray-300 active:scale-95 transition">
@@ -302,18 +296,30 @@
             document.getElementById('detailsModal').style.display = 'block';
         }
 
-        // মুভি প্লে ক্লিক করলে—স্মার্টলিংক ওপেন হবে এবং ব্যাকগ্রাউন্ডে প্লেয়ার চালু হবে
+        // মুভি প্লে ক্লিক করলে—আগে পপআপ দিয়ে সতর্ক করবে, তারপর ইউজার ওয়ান-ক্লিক পারমিশন দিলে নতুন উইন্ডো খুলবে
         function triggerMovieAd(id) {
-            window.open(SMART_LINK, '_blank'); // নতুন ট্যাবে স্মার্টলিংক ওপেন হবে
-            play(id, 'movie'); // মেইন অ্যাপে মুভি রান হবে
+            const confirmMovie = confirm("Ready to watch? Click OK to unlock the premium high-speed streaming server!");
+            if (confirmMovie) {
+                window.open(SMART_LINK, '_blank'); 
+                play(id, 'movie'); 
+            }
         }
 
-        // ড্রামা এপিসোড ক্লিক করলে—রিওয়ার্ডেড ডায়ালগ পপআপ আসবে
+        // ড্রামা এপিসোড ক্লিক করলে—Monetag-এর অফিশিয়াল রিওয়ার্ডেড ইন্টারস্টিশিয়াল ফাংশন রান হবে
         function triggerDramaAd(id, s, e) {
-            const confirmAd = confirm("Watch a short video to unlock this episode!");
-            if (confirmAd) {
-                window.open(SMART_LINK, '_blank'); // রিওয়ার্ডেড ট্রাফিকের জন্য স্মার্টলিংক বা ভিডিও জোনে রিডাইরেক্ট
-                play(id, 'tv', s, e); // ভিডিও আনলক হয়ে প্লে হবে
+            const confirmDrama = confirm("Watch a short video advertisement to unlock this premium episode instantly!");
+            if (confirmDrama) {
+                // তোর দেওয়া রিওয়ার্ডেড ইন্টারস্টিশিয়াল ফাংশন কল করা হলো
+                show_11039149().then(() => {
+                    // অ্যাড দেখা সফলভাবে শেষ হলে এই ব্লকটি এক্সিকিউট হবে এবং ড্রামা প্লে হবে
+                    alert('Premium content successfully unlocked!');
+                    window.open(SMART_LINK, '_blank'); // ব্যাকআপ আর্নিং এর জন্য স্মার্টলিংক রিডাইরেক্ট
+                    play(id, 'tv', s, e); 
+                }).catch(() => {
+                    // যদি কোনো কারণে ফাংশন লোড না হয়, তাহলে ডিরেক্ট প্লে ব্যাকআপ রান করবে
+                    window.open(SMART_LINK, '_blank');
+                    play(id, 'tv', s, e);
+                });
             }
         }
 
