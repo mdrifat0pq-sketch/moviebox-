@@ -116,20 +116,6 @@
             display: none; 
             white-space: nowrap; 
         }
-
-        .ad-container {
-            width: 100%;
-            max-width: 468px;
-            margin: 0 auto;
-            background: #111;
-            border-radius: 8px;
-            overflow: hidden;
-            border: 1px solid #222;
-            min-height: 60px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
     </style>
 </head>
 <body>
@@ -166,23 +152,7 @@
             <div class="cat-tab" onclick="switchCategory('zhthriller', this)">Chinese Thriller</div>
         </div>
 
-        <div class="px-5 my-3 flex flex-col items-center justify-center">
-            <div class="text-xs text-red-600 font-bold tracking-wider mb-1">POWERED BY RIFAT</div>
-            <div class="ad-container">
-                <script>
-                    atOptions = {
-                        'key' : 'a3682c1545972d09ecd8fb8a0eec8e9e',
-                        'format' : 'iframe',
-                        'height' : 60,
-                        'width' : 468,
-                        'params' : {}
-                    };
-                </script>
-                <script src="https://www.highperformanceformat.com/a3682c1545972d09ecd8fb8a0eec8e9e/invoke.js"></script>
-            </div>
-        </div>
-
-        <div class="flex items-center justify-between px-5 mt-2">
+        <div class="flex items-center justify-between px-5 mt-4">
             <h2 id="currentViewTitle" class="text-xs font-bold uppercase tracking-wider text-gray-400">Home Showcase</h2>
             <button onclick="handleRefreshBtn()" class="text-xs bg-[#111] border border-[#333] px-4 py-1.5 rounded-full text-gray-300 active:scale-95 transition">
                 <i class="fa fa-refresh mr-1"></i> Refresh
