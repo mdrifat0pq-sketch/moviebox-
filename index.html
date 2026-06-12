@@ -3,8 +3,7 @@
 <head>
     <meta name="monetag" content="b93d22f923b94cf3df3fcde3fdf30238">
     
-    <script src="https://sad.adsgram.ai/js/sad.min.js" defer></script>
-    <script src="https://alwingulla.com/act/files/tag.min.js" data-zone="11039149" defer data-cfasync="false"></script>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
     
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -12,7 +11,19 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
-        body { background-color: #000; color: white; font-family: 'Helvetica Neue', Arial, sans-serif; margin: 0; overflow-x: hidden; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body { 
+            background-color: #000; 
+            color: white; 
+            font-family: 'Helvetica Neue', Arial, sans-serif; 
+            margin: 0; 
+            overflow-x: hidden; 
+        }
         
         /* Multi-Row Slider Layout */
         .movie-row { display: flex; overflow-x: auto; gap: 14px; padding: 10px 20px; scrollbar-width: none; min-height: 180px; }
@@ -26,18 +37,18 @@
         /* Specific Category Full Grid Layout */
         .category-view-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 14px; padding: 20px; }
 
-        /* Netflix Immersive Full Screen Hero Banner */
+        /* Hero Banner */
         #heroSection { position: relative; width: 100%; height: 48vh; background-size: cover; background-position: center; display: flex; align-items: flex-end; padding: 20px; background-color: #111; }
         #heroSection::before { content: ''; position: absolute; inset: 0; background: linear-gradient(to top, #000 15%, rgba(0,0,0,0.2) 50%, rgba(0,0,0,0.5) 100%); }
         .hero-content { position: relative; z-index: 10; max-width: 90%; }
 
         nav { background: linear-gradient(to bottom, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0) 100%); }
 
-        /* Custom Mini Watermark Icon */
+        /* Watermark */
         .player-watermark { position: absolute; top: 4%; right: 4%; z-index: 10002; pointer-events: none; }
         .watermark-logo { width: 30px; height: 30px; object-fit: contain; filter: drop-shadow(0px 2px 4px rgba(0,0,0,0.6)); }
 
-        /* Episode Modal */
+        /* Modal */
         #detailsModal { position: fixed; inset: 0; z-index: 9000; background: #000; overflow-y: auto; display: none; }
         .ep-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(75px, 1fr)); gap: 10px; margin-top: 20px; }
         .ep-btn { background: #181818; padding: 14px; border-radius: 6px; text-align: center; font-size: 13px; font-weight: bold; border: 1px solid #262626; cursor: pointer; }
@@ -48,7 +59,55 @@
         .cat-tab { white-space: nowrap; padding: 6px 16px; border-radius: 20px; background: #222; font-size: 11px; font-weight: bold; cursor: pointer; border: 1px solid #333; }
         .cat-tab.active { background: #E50914; border-color: #E50914; }
         
-        .row-heading { font-size: 12px; font-weight: bold; text-transform: uppercase; tracking-widest: 0.1em; color: #E50914; padding-left: 12px; margin-top: 20px; border-left: 4px solid #E50914; margin-left: 20px; }
+        .row-heading { font-size: 12px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.1em; color: #E50914; padding-left: 12px; margin-top: 20px; border-left: 4px solid #E50914; margin-left: 20px; }
+
+        /* Custom Flixora Scatter Animation */
+        .intro-overlay {
+            position: fixed;
+            inset: 0;
+            background-color: #000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+            overflow: hidden;
+        }
+
+        .letter-container {
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .flix-letter {
+            font-size: 70px;
+            font-weight: 900;
+            display: inline-block;
+            opacity: 0;
+            transform: translate(var(--tx, 0), var(--ty, 0)) scale(var(--s, 1));
+            transition: all 0.8s cubic-bezier(0.34, 1.2, 0.64, 1);
+        }
+
+        .flix-letter.white { color: white; }
+        .flix-letter.red { color: #E50914; }
+
+        /* Error Toast */
+        .error-toast { 
+            position: fixed; 
+            bottom: 20px; 
+            left: 50%; 
+            transform: translateX(-50%); 
+            background: #E50914; 
+            color: white; 
+            padding: 8px 20px; 
+            border-radius: 30px; 
+            font-size: 12px; 
+            z-index: 20000; 
+            display: none; 
+            white-space: nowrap; 
+        }
     </style>
 </head>
 <body>
@@ -61,6 +120,8 @@
         </div>
     </nav>
 
+    <div id="errorToast" class="error-toast">⚠️ Video failed, trying alternative server...</div>
+
     <div>
         <div id="searchBox" class="px-5 pt-20 pb-2 hidden bg-black">
             <input id="searchInput" type="text" placeholder="Search movies, K-Drama..." class="w-full bg-[#111] p-3 rounded-lg border border-red-600/30 outline-none text-white text-sm">
@@ -69,8 +130,8 @@
         <div id="heroSection">
             <div class="hero-content">
                 <h2 id="heroTitle" class="text-2xl font-black mb-1 text-white drop-shadow-md">Flixora Premium</h2>
-                <p id="heroDesc" class="text-gray-300 text-xs line-clamp-2 mb-4 max-w-sm drop-shadow">Explore unlimited streams and custom entertainment collections.</p>
-                <button id="heroPlayBtn" class="bg-white text-black font-bold text-xs px-5 py-2.5 rounded flex items-center gap-2 shadow-lg hover:bg-gray-200 transition"><i class="fa fa-play"></i> Watch Trailer</button>
+                <p id="heroDesc" class="text-gray-300 text-xs line-clamp-2 mb-4 max-w-sm drop-shadow">Unlimited streaming, best collections.</p>
+                <button id="heroPlayBtn" class="bg-white text-black font-bold text-xs px-5 py-2.5 rounded flex items-center gap-2 shadow-lg hover:bg-gray-200 transition"><i class="fa fa-play"></i> Watch Now</button>
             </div>
         </div>
 
@@ -84,37 +145,23 @@
         </div>
 
         <div class="px-5 my-3 flex flex-col items-center justify-center">
-            <div class="text-xs text-red-600 font-bold tracking-wider mb-1" style="font-family: 'Courier New', Courier, monospace;">
-                𝔓𝔬𝔴𝔢𝔯𝔢𝔡 𝔟𝔶 ℜ𝔦𝔣𝔞𝔱
-            </div>
-            <div class="w-full max-w-[468px] bg-[#111] rounded border border-[#222] overflow-hidden flex flex-col items-center justify-center py-1" style="min-height: 60px;">
-                <script>
-                  atOptions = {
-                    'key' : 'a3682c1545972d09ecd8fb8a0eec8e9e',
-                    'format' : 'iframe',
-                    'height' : 60,
-                    'width' : 468,
-                    'params' : {}
-                  };
-                </script>
-                <script src="https://www.highperformanceformat.com/a3682c1545972d09ecd8fb8a0eec8e9e/invoke.js"></script>
-            </div>
+            <div class="text-xs text-red-600 font-bold tracking-wider mb-1">POWERED BY RIFAT</div>
         </div>
 
         <div class="flex items-center justify-between px-5 mt-2">
             <h2 id="currentViewTitle" class="text-xs font-bold uppercase tracking-wider text-gray-400">Home Showcase</h2>
             <button onclick="handleRefreshBtn()" class="text-xs bg-[#111] border border-[#333] px-4 py-1.5 rounded-full text-gray-300 active:scale-95 transition">
-                <i class="fa fa-refresh mr-1"></i> Refresh Content
+                <i class="fa fa-refresh mr-1"></i> Refresh
             </button>
         </div>
 
         <div id="homeRowsContainer" class="mt-4">
-            <div id="row-all"><h3 class="row-heading">Trending Now</h3><div id="grid-all" class="movie-row">Loading rows...</div></div>
-            <div id="row-kdrama"><h3 class="row-heading">K-Drama Series</h3><div id="grid-kdrama" class="movie-row">Loading rows...</div></div>
-            <div id="row-cdrama"><h3 class="row-heading">C-Drama Series</h3><div id="grid-cdrama" class="movie-row">Loading rows...</div></div>
-            <div id="row-idhorror"><h3 class="row-heading">Indonesian Horror</h3><div id="grid-idhorror" class="movie-row">Loading rows...</div></div>
-            <div id="row-zhhorror"><h3 class="row-heading">Chinese Horror</h3><div id="grid-zhhorror" class="movie-row">Loading rows...</div></div>
-            <div id="row-zhthriller"><h3 class="row-heading">Chinese Thriller</h3><div id="grid-zhthriller" class="movie-row">Loading rows...</div></div>
+            <div id="row-all"><h3 class="row-heading">Trending Now</h3><div id="grid-all" class="movie-row">Loading...</div></div>
+            <div id="row-kdrama"><h3 class="row-heading">K-Drama Series</h3><div id="grid-kdrama" class="movie-row">Loading...</div></div>
+            <div id="row-cdrama"><h3 class="row-heading">C-Drama Series</h3><div id="grid-cdrama" class="movie-row">Loading...</div></div>
+            <div id="row-idhorror"><h3 class="row-heading">Indonesian Horror</h3><div id="grid-idhorror" class="movie-row">Loading...</div></div>
+            <div id="row-zhhorror"><h3 class="row-heading">Chinese Horror</h3><div id="grid-zhhorror" class="movie-row">Loading...</div></div>
+            <div id="row-zhthriller"><h3 class="row-heading">Chinese Thriller</h3><div id="grid-zhthriller" class="movie-row">Loading...</div></div>
         </div>
 
         <div id="singleCategoryView" class="hidden mt-4">
@@ -135,19 +182,76 @@
     </div>
 
     <div id="player" class="fixed inset-0 bg-black z-[9999] hidden">
-        <div class="player-watermark">
-            <img class="watermark-logo" src="https://i.ibb.co.com/RkpHQDFp/file-00000000a76c7209afe66a306f119a83.png" alt="Watermark">
-        </div>
+        <div id="playerIntro" class="intro-overlay"></div>
+        <div class="player-watermark"><img class="watermark-logo" src="https://i.ibb.co.com/RkpHQDFp/file-00000000a76c7209afe66a306f119a83.png" alt="Watermark"></div>
         <button onclick="closePlayer()" class="absolute top-6 left-6 z-[10001] text-2xl drop-shadow-md text-white hover:text-red-600 transition"><i class="fa fa-chevron-left"></i></button>
-        <iframe id="videoFrame" class="w-full h-full" allowfullscreen frameborder="0"></iframe>
+        <iframe id="videoFrame" class="w-full h-full invisible" allowfullscreen allow="autoplay; fullscreen; picture-in-picture; encrypted-media" frameborder="0"></iframe>
     </div>
 
     <script>
-        // 💡 যদি ডেটা না আসে, নতুন API KEY এখানে বসাবি: '2d2caca374aecd4dbd0f66adb29dd554'
         const KEY = '2d2caca374aecd4dbd0f66adb29dd554';
         const IMG = 'https://image.tmdb.org/t/p/w342';
-        const SMART_LINK = 'https://omg10.com/4/11039077'; 
+        
         let currentActiveTab = 'all';
+        let globalId = '', globalType = '', globalS = 1, globalE = 1;
+        let currentServerIndex = 0;
+        let retryTimeout = null;
+
+        const tg = window.Telegram ? window.Telegram.WebApp : null;
+        if (tg) { tg.ready(); tg.expand(); }
+
+        // Custom intro animation
+        function showCustomIntro(callback) {
+            const overlay = document.getElementById('playerIntro');
+            if (!overlay) return;
+            
+            overlay.innerHTML = '';
+            const text = "FLIXORA";
+            const letters = text.split('');
+            const container = document.createElement('div');
+            container.className = 'letter-container';
+            
+            const letterElements = [];
+            letters.forEach((char, idx) => {
+                const span = document.createElement('span');
+                span.innerText = char;
+                span.className = `flix-letter ${char === 'X' ? 'red' : 'white'}`;
+                const angle = Math.random() * Math.PI * 2;
+                const radius = 250 + Math.random() * 150;
+                const tx = Math.cos(angle) * radius;
+                const ty = Math.sin(angle) * radius;
+                span.style.setProperty('--tx', `${tx}px`);
+                span.style.setProperty('--ty', `${ty}px`);
+                span.style.setProperty('--s', '0.2');
+                span.style.opacity = '0';
+                container.appendChild(span);
+                letterElements.push(span);
+            });
+            
+            overlay.appendChild(container);
+            overlay.style.display = 'flex';
+            
+            setTimeout(() => {
+                letterElements.forEach((el, i) => {
+                    setTimeout(() => {
+                        el.style.setProperty('--tx', '0');
+                        el.style.setProperty('--ty', '0');
+                        el.style.setProperty('--s', '1');
+                        el.style.opacity = '1';
+                    }, i * 60);
+                });
+            }, 50);
+            
+            setTimeout(() => {
+                overlay.style.transition = 'opacity 0.8s ease';
+                overlay.style.opacity = '0';
+                setTimeout(() => {
+                    overlay.style.display = 'none';
+                    overlay.style.opacity = '1';
+                    if (callback) callback();
+                }, 800);
+            }, 1200);
+        }
 
         function getCategoryUrl(cat, page = 1) {
             switch(cat) {
@@ -161,13 +265,9 @@
             }
         }
 
-        function toggleSearch() {
-            document.getElementById('searchBox').classList.toggle('hidden');
-        }
-
-        document.getElementById('searchInput').addEventListener('keyup', (e) => {
-            if(e.key === 'Enter') search(e.target.value);
-        });
+        function toggleSearch() { document.getElementById('searchBox').classList.toggle('hidden'); }
+        
+        document.getElementById('searchInput').addEventListener('keyup', (e) => { if(e.key === 'Enter') search(e.target.value); });
 
         async function search(q) {
             try {
@@ -178,59 +278,42 @@
                 targetView.classList.remove('hidden');
                 document.getElementById('singleCategoryTitle').innerText = `Search Results for: ${q}`;
                 if(d.results) renderGridHtml(d.results, 'movie', 'singleCategoryGrid');
-            } catch(err) {
-                console.error("Search failed");
-            }
+            } catch(err) { console.error("Search failed"); }
         }
 
         async function switchCategory(catId, el) {
             currentActiveTab = catId;
             document.querySelectorAll('.cat-tab').forEach(t => t.classList.remove('active'));
             if(el) el.classList.add('active');
-
             const rowsContainer = document.getElementById('homeRowsContainer');
             const singleView = document.getElementById('singleCategoryView');
-
             if(catId === 'all') {
                 rowsContainer.classList.remove('hidden');
                 singleView.classList.add('hidden');
                 document.getElementById('currentViewTitle').innerText = "Home Showcase";
-                loadAllRows(false); 
+                loadAllRows(false);
             } else {
                 rowsContainer.classList.add('hidden');
                 singleView.classList.remove('hidden');
                 document.getElementById('currentViewTitle').innerText = `Viewing ${el.innerText}`;
                 document.getElementById('singleCategoryTitle').innerText = `${el.innerText} Catalog`;
-                
                 const randomPage1 = Math.floor(Math.random() * 5) + 1;
                 const randomPage2 = randomPage1 + 1;
                 const targetType = (catId === 'kdrama' || catId === 'cdrama') ? 'tv' : 'movie';
-                
-                document.getElementById('singleCategoryGrid').innerHTML = '<div class="col-span-full text-xs text-gray-500 p-5 text-center">Loading Content Catalog...</div>';
-                
+                document.getElementById('singleCategoryGrid').innerHTML = '<div class="col-span-full text-xs text-gray-500 p-5 text-center">Loading Content...</div>';
                 try {
-                    const [res1, res2] = await Promise.all([
-                        fetch(getCategoryUrl(catId, randomPage1)).then(r => r.json()),
-                        fetch(getCategoryUrl(catId, randomPage2)).then(r => r.json())
-                    ]);
+                    const [res1, res2] = await Promise.all([fetch(getCategoryUrl(catId, randomPage1)).then(r => r.json()), fetch(getCategoryUrl(catId, randomPage2)).then(r => r.json())]);
                     const combinedData = [...(res1.results || []), ...(res2.results || [])];
                     renderGridHtml(combinedData, targetType, 'singleCategoryGrid');
-                } catch(e) {
-                    document.getElementById('singleCategoryGrid').innerHTML = '<div class="col-span-full text-xs text-red-500 text-center">Server timeout. Try refreshing.</div>';
-                }
+                } catch(e) { document.getElementById('singleCategoryGrid').innerHTML = '<div class="col-span-full text-xs text-red-500 text-center">Server error. Refresh.</div>'; }
             }
         }
 
         function handleRefreshBtn() {
-            if(currentActiveTab === 'all') {
-                loadAllRows(true); 
-            } else {
-                const activeEl = document.querySelector('.cat-tab.active');
-                switchCategory(currentActiveTab, activeEl);
-            }
+            if(currentActiveTab === 'all') loadAllRows(true);
+            else { const activeEl = document.querySelector('.cat-tab.active'); switchCategory(currentActiveTab, activeEl); }
         }
 
-        // ⚡ CRITICAL ENHANCEMENT: প্রতিটি ফেচ রিকোয়েস্টকে ট্রাই-ক্যাচ দিয়ে আইসোলেট করা হয়েছে
         async function fetchRowData(category, type, elementId, pageNum, isRandomize) {
             try {
                 const r = await fetch(getCategoryUrl(category, pageNum));
@@ -238,18 +321,12 @@
                 if(d.results && d.results.length > 0) {
                     renderListHtml(d.results, type, elementId);
                     if(category === 'all' && !isRandomize) loadHeroBanner(d.results[0]);
-                } else {
-                    document.getElementById(elementId).innerHTML = '<div class="text-xs text-gray-600 p-4">API empty response.</div>';
-                }
-            } catch(e) {
-                document.getElementById(elementId).innerHTML = '<div class="text-xs text-red-500/50 p-4">Failed to fetch data stream.</div>';
-            }
+                } else { document.getElementById(elementId).innerHTML = '<div class="text-xs text-gray-600 p-4">No content available.</div>'; }
+            } catch(e) { document.getElementById(elementId).innerHTML = '<div class="text-xs text-red-500/50 p-4">Failed to fetch.</div>'; }
         }
 
         async function loadAllRows(isRandomize = false) {
             const pageNum = isRandomize ? Math.floor(Math.random() * 5) + 1 : 1;
-
-            // সব প্যারালাল কল হবে, একটা ফেইল করলে অন্যগুলো আটকাবে না
             fetchRowData('all', 'movie', 'grid-all', pageNum, isRandomize);
             fetchRowData('kdrama', 'tv', 'grid-kdrama', pageNum, isRandomize);
             fetchRowData('cdrama', 'tv', 'grid-cdrama', pageNum, isRandomize);
@@ -261,33 +338,15 @@
         function renderListHtml(list, defaultType, targetGridId) {
             const grid = document.getElementById(targetGridId);
             const validItems = list.filter(m => m.poster_path);
-            if(validItems.length === 0) {
-                grid.innerHTML = '<div class="text-xs text-gray-600 p-4">No content posters available.</div>';
-                return;
-            }
-            grid.innerHTML = validItems.map(m => `
-                <div class="movie-card" onclick="openDetails('${m.id}', '${m.media_type || defaultType}')">
-                    <div class="poster-wrapper"><img src="${IMG + m.poster_path}"></div>
-                    <div class="movie-title">${m.title || m.name}</div>
-                </div>
-            `).join('');
+            if(validItems.length === 0) { grid.innerHTML = '<div class="text-xs text-gray-600 p-4">No posters available.</div>'; return; }
+            grid.innerHTML = validItems.map(m => `<div class="movie-card" onclick="openDetails('${m.id}', '${m.media_type || defaultType}')"><div class="poster-wrapper"><img src="${IMG + m.poster_path}"></div><div class="movie-title">${m.title || m.name}</div></div>`).join('');
         }
-
-        function borderClean(str) { return str.replace(/['"]/g, ''); }
 
         function renderGridHtml(list, defaultType, targetGridId) {
             const grid = document.getElementById(targetGridId);
             const uniqueList = list.filter((item, index, self) => index === self.findIndex((t) => t.id === item.id) && item.poster_path);
-            if(uniqueList.length === 0) {
-                grid.innerHTML = '<div class="text-xs text-gray-600 p-4">No items grid available.</div>';
-                return;
-            }
-            grid.innerHTML = uniqueList.map(m => `
-                <div class="w-full cursor-pointer transition active:scale-95 mb-2" onclick="openDetails('${m.id}', '${m.media_type || defaultType}')">
-                    <div class="poster-wrapper" style="width:100% !important;"><img src="${IMG + m.poster_path}"></div>
-                    <div class="movie-title mt-1">${m.title || m.name}</div>
-                </div>
-            `).join('');
+            if(uniqueList.length === 0) { grid.innerHTML = '<div class="text-xs text-gray-600 p-4">No items found.</div>'; return; }
+            grid.innerHTML = uniqueList.map(m => `<div class="w-full cursor-pointer transition active:scale-95 mb-2" onclick="openDetails('${m.id}', '${m.media_type || defaultType}')"><div class="poster-wrapper" style="width:100% !important;"><img src="${IMG + m.poster_path}"></div><div class="movie-title mt-1">${m.title || m.name}</div></div>`).join('');
         }
 
         async function loadHeroBanner(item) {
@@ -304,83 +363,82 @@
                 const r = await fetch(`https://api.themoviedb.org/3/${type}/${id}?api_key=${KEY}`);
                 const d = await r.json();
                 document.getElementById('detTitle').innerText = d.name || d.title;
-                document.getElementById('detDesc').innerText = d.overview ? d.overview.substring(0, 160) + '...' : 'Watch full stream inside.';
+                document.getElementById('detDesc').innerText = d.overview ? d.overview.substring(0, 160) + '...' : 'Stream now.';
                 document.getElementById('detBackdrop').src = `https://image.tmdb.org/t/p/w780${d.backdrop_path || d.poster_path}`;
-                
                 const grid = document.getElementById('epGrid'); grid.innerHTML = '';
                 if(type === 'tv' || d.number_of_seasons) {
                     const sR = await fetch(`https://api.themoviedb.org/3/tv/${id}/season/1?api_key=${KEY}`);
                     const sD = await sR.json();
-                    if(sD.episodes && sD.episodes.length > 0) {
-                        sD.episodes.forEach(e => {
-                            grid.innerHTML += `<div class="ep-btn" onclick="triggerDramaAd('${id}', 1, ${e.episode_number})">Ep ${e.episode_number}</div>`;
-                        });
-                    } else {
-                        grid.innerHTML = `<div class="ep-btn col-span-full">Episodes Coming Soon</div>`;
-                    }
-                } else {
-                    grid.innerHTML = `<div class="ep-btn col-span-full" onclick="triggerMovieAd('${id}')">Watch Full Movie</div>`;
-                }
+                    if(sD.episodes && sD.episodes.length > 0) { sD.episodes.forEach(e => { grid.innerHTML += `<div class="ep-btn" onclick="playWithFallback('${id}', 'tv', 1, ${e.episode_number})">Episode ${e.episode_number}</div>`; }); }
+                    else { grid.innerHTML = `<div class="ep-btn col-span-full">Episodes Coming Soon</div>`; }
+                } else { grid.innerHTML = `<div class="ep-btn col-span-full" onclick="playWithFallback('${id}', 'movie')">Watch Full Movie</div>`; }
                 document.getElementById('detailsModal').style.display = 'block';
-            } catch(err) {
-                alert("Could not load media details from backend server.");
-            }
+            } catch(err) { alert("Failed to load details."); }
         }
 
-        function triggerMovieAd(id) {
-            const confirmMovie = confirm("Ready to watch? Click OK to unlock the premium high-speed streaming server!");
-            if (confirmMovie) {
-                window.open(SMART_LINK, '_blank'); 
-                play(id, 'movie'); 
-            }
+        // Multiple server sources
+        const serverSources = [
+            (id, type, s, e) => type === 'movie' ? `https://vidsrc.to/embed/movie/${id}` : `https://vidsrc.to/embed/tv/${id}/${s}/${e}`,
+            (id, type, s, e) => type === 'movie' ? `https://autoembed.to/embed/movie/${id}` : `https://autoembed.to/embed/tv/${id}/${s}/${e}`,
+            (id, type, s, e) => type === 'movie' ? `https://2embed.mom/embed/movie/${id}` : `https://2embed.mom/embed/tv/${id}/${s}/${e}`
+        ];
+
+        function showErrorToast(msg) {
+            const toast = document.getElementById('errorToast');
+            toast.innerText = msg;
+            toast.style.display = 'block';
+            setTimeout(() => { toast.style.display = 'none'; }, 4000);
         }
 
-        function triggerDramaAd(id, s, e) {
-            const confirmDrama = confirm("Watch a short video advertisement to unlock this premium episode instantly!");
-            if (confirmDrama) {
-                try {
-                    if (typeof show_11039149 === "function") {
-                        show_11039149().then(() => {
-                            window.open(SMART_LINK, '_blank'); 
-                            play(id, 'tv', s, e); 
-                        }).catch((err) => {
-                            window.open(SMART_LINK, '_blank');
-                            play(id, 'tv', s, e);
-                        });
-                    } else {
-                        window.open(SMART_LINK, '_blank');
-                        play(id, 'tv', s, e);
-                    }
-                } catch(err) {
-                    window.open(SMART_LINK, '_blank');
-                    play(id, 'tv', s, e);
+        function loadVideoWithRetry(serverIdx) {
+            const videoFrame = document.getElementById('videoFrame');
+            if (retryTimeout) clearTimeout(retryTimeout);
+            const url = serverSources[serverIdx](globalId, globalType, globalS, globalE);
+            videoFrame.src = url;
+            currentServerIndex = serverIdx;
+            
+            retryTimeout = setTimeout(() => {
+                if (currentServerIndex + 1 < serverSources.length) {
+                    showErrorToast(`Server ${currentServerIndex+1} failed, trying Server ${currentServerIndex+2}...`);
+                    loadVideoWithRetry(currentServerIndex + 1);
+                } else {
+                    showErrorToast(`All servers failed! Please try again later.`);
                 }
-            }
+            }, 8000);
+            
+            videoFrame.onload = () => {
+                if (retryTimeout) clearTimeout(retryTimeout);
+                retryTimeout = null;
+            };
         }
 
-        function play(id, type, s=1, e=1) {
+        function playWithFallback(id, type, s=1, e=1) {
+            globalId = id; globalType = type; globalS = s; globalE = e;
             const player = document.getElementById('player');
             const videoFrame = document.getElementById('videoFrame');
             player.classList.remove('hidden');
+            videoFrame.classList.add('invisible');
+            videoFrame.setAttribute('allow', 'autoplay; fullscreen; picture-in-picture; encrypted-media');
             
-            let src = '';
-            if(type === 'movie') {
-                src = `https://vidsrc.cc/v2/embed/movie/${id}`;
-            } else if(type === 'tv') {
-                src = `https://vidsrc.cc/v2/embed/tv/${id}/${s}/${e}`;
-            }
-            videoFrame.src = src;
+            showCustomIntro(() => {
+                currentServerIndex = 0;
+                loadVideoWithRetry(0);
+                setTimeout(() => {
+                    videoFrame.classList.remove('invisible');
+                }, 100);
+            });
         }
 
         function closeDetails() { document.getElementById('detailsModal').style.display = 'none'; }
+        
         function closePlayer() { 
             document.getElementById('player').classList.add('hidden'); 
             document.getElementById('videoFrame').src = ''; 
+            document.getElementById('videoFrame').classList.add('invisible');
+            if (retryTimeout) clearTimeout(retryTimeout);
         }
 
-        window.addEventListener('DOMContentLoaded', () => {
-            loadAllRows(false);
-        });
+        window.addEventListener('DOMContentLoaded', () => { loadAllRows(false); });
     </script>
 </body>
-                    </html>
+            </html>
