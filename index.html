@@ -5,6 +5,9 @@
     
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     
+    <script src="https://sad.adsgram.ai/js/sad.min.js" defer></script>
+    <script src="https://alwingulla.com/act/files/tag.min.js" data-zone="11039149" defer data-cfasync="false"></script>
+    
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Flixora | Premium Stream</title>
@@ -90,8 +93,13 @@
             transition: all 0.8s cubic-bezier(0.34, 1.2, 0.64, 1);
         }
 
-        .flix-letter.white { color: white; }
-        .flix-letter.red { color: #E50914; }
+        /* White for all letters, red for X */
+        .flix-letter.white {
+            color: white;
+        }
+        .flix-letter.red {
+            color: #E50914;
+        }
 
         /* Error Toast */
         .error-toast { 
@@ -107,6 +115,20 @@
             z-index: 20000; 
             display: none; 
             white-space: nowrap; 
+        }
+
+        .ad-container {
+            width: 100%;
+            max-width: 468px;
+            margin: 0 auto;
+            background: #111;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid #222;
+            min-height: 60px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
     </style>
 </head>
@@ -146,6 +168,18 @@
 
         <div class="px-5 my-3 flex flex-col items-center justify-center">
             <div class="text-xs text-red-600 font-bold tracking-wider mb-1">POWERED BY RIFAT</div>
+            <div class="ad-container">
+                <script>
+                    atOptions = {
+                        'key' : 'a3682c1545972d09ecd8fb8a0eec8e9e',
+                        'format' : 'iframe',
+                        'height' : 60,
+                        'width' : 468,
+                        'params' : {}
+                    };
+                </script>
+                <script src="https://www.highperformanceformat.com/a3682c1545972d09ecd8fb8a0eec8e9e/invoke.js"></script>
+            </div>
         </div>
 
         <div class="flex items-center justify-between px-5 mt-2">
@@ -191,7 +225,7 @@
     <script>
         const KEY = '2d2caca374aecd4dbd0f66adb29dd554';
         const IMG = 'https://image.tmdb.org/t/p/w342';
-        
+        const SMART_LINK = 'https://omg10.com/4/11039077';
         let currentActiveTab = 'all';
         let globalId = '', globalType = '', globalS = 1, globalE = 1;
         let currentServerIndex = 0;
@@ -200,7 +234,7 @@
         const tg = window.Telegram ? window.Telegram.WebApp : null;
         if (tg) { tg.ready(); tg.expand(); }
 
-        // Custom intro animation
+        // Custom intro animation: letters scatter and assemble
         function showCustomIntro(callback) {
             const overlay = document.getElementById('playerIntro');
             if (!overlay) return;
@@ -216,6 +250,7 @@
                 const span = document.createElement('span');
                 span.innerText = char;
                 span.className = `flix-letter ${char === 'X' ? 'red' : 'white'}`;
+                // Random starting positions (scattered)
                 const angle = Math.random() * Math.PI * 2;
                 const radius = 250 + Math.random() * 150;
                 const tx = Math.cos(angle) * radius;
@@ -231,6 +266,7 @@
             overlay.appendChild(container);
             overlay.style.display = 'flex';
             
+            // Force reflow to trigger animation
             setTimeout(() => {
                 letterElements.forEach((el, i) => {
                     setTimeout(() => {
@@ -242,6 +278,7 @@
                 });
             }, 50);
             
+            // After assembly, fade out
             setTimeout(() => {
                 overlay.style.transition = 'opacity 0.8s ease';
                 overlay.style.opacity = '0';
@@ -369,14 +406,26 @@
                 if(type === 'tv' || d.number_of_seasons) {
                     const sR = await fetch(`https://api.themoviedb.org/3/tv/${id}/season/1?api_key=${KEY}`);
                     const sD = await sR.json();
-                    if(sD.episodes && sD.episodes.length > 0) { sD.episodes.forEach(e => { grid.innerHTML += `<div class="ep-btn" onclick="playWithFallback('${id}', 'tv', 1, ${e.episode_number})">Episode ${e.episode_number}</div>`; }); }
+                    if(sD.episodes && sD.episodes.length > 0) { sD.episodes.forEach(e => { grid.innerHTML += `<div class="ep-btn" onclick="triggerDramaAd('${id}', 1, ${e.episode_number})">Episode ${e.episode_number}</div>`; }); }
                     else { grid.innerHTML = `<div class="ep-btn col-span-full">Episodes Coming Soon</div>`; }
-                } else { grid.innerHTML = `<div class="ep-btn col-span-full" onclick="playWithFallback('${id}', 'movie')">Watch Full Movie</div>`; }
+                } else { grid.innerHTML = `<div class="ep-btn col-span-full" onclick="triggerMovieAd('${id}')">Watch Full Movie</div>`; }
                 document.getElementById('detailsModal').style.display = 'block';
             } catch(err) { alert("Failed to load details."); }
         }
 
-        // Multiple server sources
+        function triggerMovieAd(id) { if(confirm("Ready? Click OK to unlock premium server.")) { openSecureLink(SMART_LINK); playWithFallback(id, 'movie'); } }
+        
+        function triggerDramaAd(id, s, e) { 
+            if(confirm("Watch a short ad to unlock this episode instantly!")) { 
+                if(typeof show_11039149 === "function") { 
+                    show_11039149().then(() => { openSecureLink(SMART_LINK); playWithFallback(id, 'tv', s, e); }).catch(() => { openSecureLink(SMART_LINK); playWithFallback(id, 'tv', s, e); }); 
+                } else { openSecureLink(SMART_LINK); playWithFallback(id, 'tv', s, e); } 
+            } 
+        }
+
+        function openSecureLink(url) { if(tg && typeof tg.openLink === 'function') tg.openLink(url); else { const win = window.open(); if(win) { win.opener = null; win.location = url; } else window.location.href = url; } }
+
+        // Multiple server sources (background)
         const serverSources = [
             (id, type, s, e) => type === 'movie' ? `https://vidsrc.to/embed/movie/${id}` : `https://vidsrc.to/embed/tv/${id}/${s}/${e}`,
             (id, type, s, e) => type === 'movie' ? `https://autoembed.to/embed/movie/${id}` : `https://autoembed.to/embed/tv/${id}/${s}/${e}`,
@@ -441,4 +490,4 @@
         window.addEventListener('DOMContentLoaded', () => { loadAllRows(false); });
     </script>
 </body>
-            </html>
+    </html>
