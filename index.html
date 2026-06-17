@@ -367,20 +367,48 @@
 
         async function openDetails(id, type) {
             try {
-                const r = await fetch(`https://api.themoviedb.org/3/${type}/${id}?api_key=${KEY}`);
-                const d = await r.json();
+                let r = await fetch(`https://api.themoviedb.org/3/${type}/${id}?api_key=${KEY}`);
+                let d = await r.json();
+                
+                if (d.success === false) {
+                    const altType = type === 'movie' ? 'tv' : 'movie';
+                    const altR = await fetch(`https://api.themoviedb.org/3/${altType}/${id}?api_key=${KEY}`);
+                    const altD = await altR.json();
+                    if (altD.id) {
+                        d = altD;
+                        type = altType;
+                    }
+                }
+
                 document.getElementById('detTitle').innerText = d.name || d.title;
                 document.getElementById('detDesc').innerText = d.overview ? d.overview.substring(0, 160) + '...' : 'Stream now.';
                 document.getElementById('detBackdrop').src = `https://image.tmdb.org/t/p/w780${d.backdrop_path || d.poster_path}`;
-                const grid = document.getElementById('epGrid'); grid.innerHTML = '';
-                if(type === 'tv' || d.number_of_seasons) {
-                    const sR = await fetch(`https://api.themoviedb.org/3/tv/${id}/season/1?api_key=${KEY}`);
-                    const sD = await sR.json();
-                    if(sD.episodes && sD.episodes.length > 0) { sD.episodes.forEach(e => { grid.innerHTML += `<div class="ep-btn" onclick="triggerDramaAd('${id}', 1, ${e.episode_number})">Episode ${e.episode_number}</div>`; }); }
-                    else { grid.innerHTML = `<div class="ep-btn col-span-full">Episodes Coming Soon</div>`; }
-                } else { grid.innerHTML = `<div class="ep-btn col-span-full" onclick="triggerMovieAd('${id}')">Watch Full Movie</div>`; }
+                
+                const grid = document.getElementById('epGrid'); 
+                grid.innerHTML = '';
+
+                if (d.first_air_date || d.number_of_seasons || type === 'tv') {
+                    try {
+                        const sR = await fetch(`https://api.themoviedb.org/3/tv/${id}/season/1?api_key=${KEY}`);
+                        const sD = await sR.json();
+                        if(sD.episodes && sD.episodes.length > 0) { 
+                            sD.episodes.forEach(e => { 
+                                grid.innerHTML += `<div class="ep-btn" onclick="triggerDramaAd('${id}', 1, ${e.episode_number})">Episode ${e.episode_number}</div>`; 
+                            }); 
+                        } else { 
+                            grid.innerHTML = `<div class="ep-btn col-span-full" onclick="triggerMovieAd('${id}')">Watch Full Movie</div>`; 
+                        }
+                    } catch(e) {
+                        grid.innerHTML = `<div class="ep-btn col-span-full" onclick="triggerMovieAd('${id}')">Watch Full Movie</div>`;
+                    }
+                } else { 
+                    grid.innerHTML = `<div class="ep-btn col-span-full" onclick="triggerMovieAd('${id}')">Watch Full Movie</div>`; 
+                }
+                
                 document.getElementById('detailsModal').style.display = 'block';
-            } catch(err) { alert("Failed to load details."); }
+            } catch(err) { 
+                alert("Failed to load details. Try again."); 
+            }
         }
 
         function triggerMovieAd(id) { if(confirm("Ready? Click OK to unlock premium server.")) { openSecureLink(SMART_LINK); playWithFallback(id, 'movie'); } }
@@ -392,6 +420,8 @@
                 } else { openSecureLink(SMART_LINK); playWithFallback(id, 'tv', s, e); } 
             } 
         }
+
+        document.getElementById('searchInput').addEventListener('keyup', (e) => { if(e.key === 'Enter') search(e.target.value); });
 
         function openSecureLink(url) { if(tg && typeof tg.openLink === 'function') tg.openLink(url); else { const win = window.open(); if(win) { win.opener = null; win.location = url; } else window.location.href = url; } }
 
@@ -426,38 +456,4 @@
             }, 8000);
             
             videoFrame.onload = () => {
-                if (retryTimeout) clearTimeout(retryTimeout);
-                retryTimeout = null;
-            };
-        }
-
-        function playWithFallback(id, type, s=1, e=1) {
-            globalId = id; globalType = type; globalS = s; globalE = e;
-            const player = document.getElementById('player');
-            const videoFrame = document.getElementById('videoFrame');
-            player.classList.remove('hidden');
-            videoFrame.classList.add('invisible');
-            videoFrame.setAttribute('allow', 'autoplay; fullscreen; picture-in-picture; encrypted-media');
-            
-            showCustomIntro(() => {
-                currentServerIndex = 0;
-                loadVideoWithRetry(0);
-                setTimeout(() => {
-                    videoFrame.classList.remove('invisible');
-                }, 100);
-            });
-        }
-
-        function closeDetails() { document.getElementById('detailsModal').style.display = 'none'; }
-        
-        function closePlayer() { 
-            document.getElementById('player').classList.add('hidden'); 
-            document.getElementById('videoFrame').src = ''; 
-            document.getElementById('videoFrame').classList.add('invisible');
-            if (retryTimeout) clearTimeout(retryTimeout);
-        }
-
-        window.addEventListener('DOMContentLoaded', () => { loadAllRows(false); });
-    </script>
-</body>
-    </html>
+                if (
