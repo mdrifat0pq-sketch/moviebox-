@@ -421,8 +421,6 @@
             } 
         }
 
-        document.getElementById('searchInput').addEventListener('keyup', (e) => { if(e.key === 'Enter') search(e.target.value); });
-
         function openSecureLink(url) { if(tg && typeof tg.openLink === 'function') tg.openLink(url); else { const win = window.open(); if(win) { win.opener = null; win.location = url; } else window.location.href = url; } }
 
         // Multiple server sources (background)
@@ -456,4 +454,38 @@
             }, 8000);
             
             videoFrame.onload = () => {
-                if (
+                if (retryTimeout) clearTimeout(retryTimeout);
+                retryTimeout = null;
+            };
+        }
+
+        function playWithFallback(id, type, s=1, e=1) {
+            globalId = id; globalType = type; globalS = s; globalE = e;
+            const player = document.getElementById('player');
+            const videoFrame = document.getElementById('videoFrame');
+            player.classList.remove('hidden');
+            videoFrame.classList.add('invisible');
+            videoFrame.setAttribute('allow', 'autoplay; fullscreen; picture-in-picture; encrypted-media');
+            
+            showCustomIntro(() => {
+                currentServerIndex = 0;
+                loadVideoWithRetry(0);
+                setTimeout(() => {
+                    videoFrame.classList.remove('invisible');
+                }, 100);
+            });
+        }
+
+        function closeDetails() { document.getElementById('detailsModal').style.display = 'none'; }
+        
+        function closePlayer() { 
+            document.getElementById('player').classList.add('hidden'); 
+            document.getElementById('videoFrame').src = ''; 
+            document.getElementById('videoFrame').classList.add('invisible');
+            if (retryTimeout) clearTimeout(retryTimeout);
+        }
+
+        window.addEventListener('DOMContentLoaded', () => { loadAllRows(false); });
+    </script>
+</body>
+                </html>
